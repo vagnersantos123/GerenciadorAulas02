@@ -8,6 +8,8 @@
         <Label Text="Bem-vindo ao Gerenciador de Aulas!" 
                FontSize="24" 
                HorizontalOptions="Center" />
+        <Button Text="Gerenciar Aulas" Clicked="OnGerenciarAulasClicked" />
+
 
         <Button Text="Sair" Clicked="OnSairClicked" />
     </VerticalStackLayout>

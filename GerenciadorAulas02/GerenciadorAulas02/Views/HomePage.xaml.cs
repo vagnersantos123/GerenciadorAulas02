@@ -14,4 +14,10 @@ public partial class HomePage : ContentPage
         // Voltar para a LoginPage
         await Navigation.PopToRootAsync();
     }
+
+    private async void OnGerenciarAulasClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new Views.AulasPage());
+    }
+
 }

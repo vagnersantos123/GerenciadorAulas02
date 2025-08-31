@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
+             x:Class="GerenciadorAulas02.Views.AulasPage"
+             Title="Minhas Aulas">
+
+    <ContentPage.BindingContext>
+        <viewmodels:AulasViewModel />
+    </ContentPage.BindingContext>
+
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <Button Text="Adicionar Aula" Command="{Binding AdicionarAulaCommand}" />
+
+        <CollectionView ItemsSource="{Binding Aulas}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BorderColor="Gray" Padding="10" Margin="5">
+                        <StackLayout>
+                            <Label Text="{Binding Titulo}" FontSize="20" />
+                            <Label Text="{Binding Descricao}" FontSize="14" TextColor="Gray"/>
+                            <Label Text="{Binding Data, StringFormat='dd/MM/yyyy HH:mm'}" FontSize="12" TextColor="DarkGray"/>
+                        </StackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>
