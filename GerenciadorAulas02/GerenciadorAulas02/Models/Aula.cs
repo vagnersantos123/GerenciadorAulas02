@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace GerenciadorAulas02.Models;
 
@@ -31,6 +33,25 @@ public class Aula : INotifyPropertyChanged
         get => data;
         set { data = value; OnPropertyChanged(nameof(Data)); }
     }
+
+    private TimeSpan duracao;
+    public TimeSpan Duracao
+    {
+        get => duracao;
+        set { duracao = value; OnPropertyChanged(nameof(Duracao)); }
+    }
+
+    private string tipo = "Teórica";
+    public string Tipo
+    {
+        get => tipo;
+        set { tipo = value; OnPropertyChanged(nameof(Tipo)); }
+    }
+
+    public List<string> AlunosPresentes { get; set; } = new List<string>();
+
+    // Método de resumo da aula
+    public string Resumo => $"{Titulo} ({Tipo}) - {Data:dd/MM/yyyy HH:mm}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged(string nome)

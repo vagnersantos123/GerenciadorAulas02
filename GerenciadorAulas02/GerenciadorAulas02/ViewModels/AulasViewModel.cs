@@ -23,15 +23,26 @@ public class AulasViewModel
         EditarAulaCommand = new Command<Aula>(EditarAula);
     }
 
-    private void AdicionarAula()
+    private async void AdicionarAula()
     {
-        // Para fins de exemplo, vamos adicionar uma aula fixa
+        string titulo = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Título da aula:");
+        if (string.IsNullOrWhiteSpace(titulo))
+            return;
+
+        string tipo = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Tipo (Teórica/Prática):", initialValue: "Teórica");
+        string duracaoStr = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Duração em minutos:", initialValue: "60");
+
+        if (!double.TryParse(duracaoStr, out double minutos))
+            minutos = 60;
+
         Aulas.Add(new Aula
         {
             Id = Aulas.Count + 1,
-            Titulo = "Nova Aula",
+            Titulo = titulo,
             Descricao = "Descrição da aula",
-            Data = DateTime.Now
+            Data = DateTime.Now,
+            Tipo = tipo,
+            Duracao = TimeSpan.FromMinutes(minutos)
         });
     }
     private void ExcluirAula(Aula aula)
