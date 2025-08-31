@@ -1,0 +1,80 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build / saída
+[Bb]in/
+[Oo]bj/
+[Bb]uild/
+[Bb]ld/
+[Oo]ut/
+[Dd]ebug*/
+[Rr]elease*/
+
+# VS Code (mantém configs úteis)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Logs e testes
+*.log
+TestResult*/
+*.trx
+*.coverage*
+*.dump
+
+# JetBrains / ReSharper
+.idea/
+_ReSharper*/
+*.DotSettings.user
+*.sln.iml
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# MAUI / Mobile artifacts
+# Android
+**/*.apk
+**/*.apks
+**/*.aab
+**/*.keystore
+**/*.jks
+
+# iOS
+**/*.ipa
+**/*.dSYM/
+**/*.xcarchive
+
+# Windows (MSIX/AppX)
+**/*.msix
+**/*.msixbundle
+**/*.appx
+**/*.appxbundle
+**/*.msixupload
+
+# Certificados / Assinaturas
+*.pfx
+*.p12
+*.cer
+*.key
+
+# Node (caso use assets híbridos)
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Segredos locais (se existirem)
+secrets.json
+appsettings.Development.json
