@@ -20,6 +20,12 @@
                             <Label Text="{Binding Titulo}" FontSize="20" />
                             <Label Text="{Binding Descricao}" FontSize="14" TextColor="Gray"/>
                             <Label Text="{Binding Data, StringFormat='dd/MM/yyyy HH:mm'}" FontSize="12" TextColor="DarkGray"/>
+
+                            <HorizontalStackLayout Spacing="10">
+                                <Button Text="Editar" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AulasViewModel}}, Path=EditarAulaCommand}" CommandParameter="{Binding}" />
+                                <Button Text="Excluir" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AulasViewModel}}, Path=ExcluirAulaCommand}" CommandParameter="{Binding}" />
+                            </HorizontalStackLayout>
+                            
                         </StackLayout>
                     </Frame>
                 </DataTemplate>

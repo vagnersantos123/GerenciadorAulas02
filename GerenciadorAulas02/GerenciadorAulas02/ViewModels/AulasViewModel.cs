@@ -10,6 +10,8 @@ public class AulasViewModel
     public ObservableCollection<Aula> Aulas { get; set; }
 
     public ICommand AdicionarAulaCommand { get; }
+    public ICommand ExcluirAulaCommand { get; }
+    public ICommand EditarAulaCommand { get; }
 
     public AulasViewModel()
     {
@@ -17,6 +19,8 @@ public class AulasViewModel
 
         // Comando para adicionar aula
         AdicionarAulaCommand = new Command(AdicionarAula);
+        ExcluirAulaCommand = new Command<Aula>(ExcluirAula);
+        EditarAulaCommand = new Command<Aula>(EditarAula);
     }
 
     private void AdicionarAula()
@@ -29,5 +33,24 @@ public class AulasViewModel
             Descricao = "Descrição da aula",
             Data = DateTime.Now
         });
+    }
+    private void ExcluirAula(Aula aula)
+    {
+        if (aula != null)
+            Aulas.Remove(aula);
+    }
+    private async void EditarAula(Aula aula)
+    {
+        if (aula != null)
+        {
+            // Exemplo simples: alterar título
+            string novoTitulo = await Application.Current.MainPage.DisplayPromptAsync(
+                "Editar Aula",
+                "Novo título:",
+                initialValue: aula.Titulo);
+
+            if (!string.IsNullOrWhiteSpace(novoTitulo))
+                aula.Titulo = novoTitulo;
+        }
     }
 }
