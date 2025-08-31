@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
+             x:Class="GerenciadorAulas02.Views.LoginPage">
+
+    <ContentPage.BindingContext>
+        <viewmodels:LoginViewModel />
+    </ContentPage.BindingContext>
+
+    <VerticalStackLayout Padding="30" Spacing="15">
+        <Label Text="Gerenciador de Aulas" 
+               FontSize="24" 
+               HorizontalOptions="Center" />
+
+        <Entry Placeholder="Usuário" 
+               Text="{Binding Usuario}" />
+
+        <Entry Placeholder="Senha" 
+               IsPassword="True" 
+               Text="{Binding Senha}" />
+
+        <Button Text="Entrar" 
+                Command="{Binding EntrarCommand}" />
+    </VerticalStackLayout>
+</ContentPage>
