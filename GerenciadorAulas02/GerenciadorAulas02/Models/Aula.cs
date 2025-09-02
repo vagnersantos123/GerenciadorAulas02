@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SQLite;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -6,7 +7,10 @@ namespace GerenciadorAulas02.Models;
 
 public class Aula : INotifyPropertyChanged
 {
+
     private int id;
+
+    [PrimaryKey, AutoIncrement] 
     public int Id
     {
         get => id;
@@ -48,6 +52,7 @@ public class Aula : INotifyPropertyChanged
         set { tipo = value; OnPropertyChanged(nameof(Tipo)); }
     }
 
+    [Ignore]
     public List<string> AlunosPresentes { get; set; } = new List<string>();
 
     // Método de resumo da aula

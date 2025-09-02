@@ -7,7 +7,7 @@ namespace GerenciadorAulas02.ViewModels;
 
 public class AulasViewModel
 {
-    public ObservableCollection<Aula> Aulas { get; set; }
+    public ObservableCollection<Aula> Aulas { get; private set; } = new ObservableCollection<Aula>();
 
     public ICommand AdicionarAulaCommand { get; }
     public ICommand ExcluirAulaCommand { get; }
@@ -15,12 +15,25 @@ public class AulasViewModel
 
     public AulasViewModel()
     {
-        Aulas = new ObservableCollection<Aula>();
-
-        // Comando para adicionar aula
         AdicionarAulaCommand = new Command(AdicionarAula);
         ExcluirAulaCommand = new Command<Aula>(ExcluirAula);
         EditarAulaCommand = new Command<Aula>(EditarAula);
+
+        // ⚡ garante que as aulas existentes sejam carregadas
+        LoadAulas();
+    }
+
+    private async void LoadAulas()
+    {
+        
+
+        var aulas = await App.Database.GetAulasAsync();
+
+        Aulas.Clear(); // limpa a coleção atual sem recriar
+        foreach (var aula in aulas)
+        {
+            Aulas.Add(aula); // adiciona as aulas salvas do banco
+        }
     }
 
     private async void AdicionarAula()
@@ -35,33 +48,43 @@ public class AulasViewModel
         if (!double.TryParse(duracaoStr, out double minutos))
             minutos = 60;
 
-        Aulas.Add(new Aula
+        Aula novaAula = new Aula
         {
-            Id = Aulas.Count + 1,
             Titulo = titulo,
             Descricao = "Descrição da aula",
             Data = DateTime.Now,
             Tipo = tipo,
             Duracao = TimeSpan.FromMinutes(minutos)
-        });
+        };
+
+        await App.Database.SaveAulaAsync(novaAula); // salva no banco
+        LoadAulas(); // recarrega a lista inteira (inclui a nova)
     }
-    private void ExcluirAula(Aula aula)
+
+    private async void ExcluirAula(Aula aula)
     {
         if (aula != null)
-            Aulas.Remove(aula);
+        {
+            await App.Database.DeleteAulaAsync(aula); // remove do banco
+            LoadAulas(); // recarrega a lista do banco
+        }
     }
+
     private async void EditarAula(Aula aula)
     {
         if (aula != null)
         {
-            // Exemplo simples: alterar título
             string novoTitulo = await Application.Current.MainPage.DisplayPromptAsync(
                 "Editar Aula",
                 "Novo título:",
                 initialValue: aula.Titulo);
 
             if (!string.IsNullOrWhiteSpace(novoTitulo))
+            {
                 aula.Titulo = novoTitulo;
+                await App.Database.SaveAulaAsync(aula); // atualiza no banco
+                LoadAulas(); // recarrega a lista
+            }
         }
     }
 }

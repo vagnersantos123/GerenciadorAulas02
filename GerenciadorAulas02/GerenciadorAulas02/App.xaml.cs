@@ -1,12 +1,27 @@
-﻿namespace GerenciadorAulas02
-{
-    public partial class App : Application
-    {
-        public App()
-        {
-            InitializeComponent();
+﻿using Microsoft.Maui.Controls;
+using System.IO;
+using GerenciadorAulas02.Services;
 
-            MainPage = new NavigationPage(new Views.LoginPage());
-        }
+namespace GerenciadorAulas02;
+
+public partial class App : Application
+{
+    // ✅ Banco de dados público e estático
+    public static AulaDatabase Database { get; private set; }
+
+    public App()
+    {
+        InitializeComponent();
+
+
+
+        // Caminho do arquivo SQLite
+        string dbPath = Path.Combine(FileSystem.AppDataDirectory, "GerenciadorAulas.db3");
+        Database = new AulaDatabase(dbPath);
+
+        S
+
+        // Página inicial
+        MainPage = new NavigationPage(new Views.LoginPage());
     }
 }
