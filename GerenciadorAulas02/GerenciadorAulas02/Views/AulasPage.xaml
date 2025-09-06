@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
              x:Class="GerenciadorAulas02.Views.AulasPage"
+             x:Name="ThisPage"
              Title="Minhas Aulas">
 
     <ContentPage.BindingContext>
@@ -10,7 +11,8 @@
     </ContentPage.BindingContext>
 
     <VerticalStackLayout Padding="20" Spacing="15">
-        <Button Text="Adicionar Aula" Command="{Binding AdicionarAulaCommand}" />
+        <Button Text="Adicionar Aula" 
+                Command="{Binding AdicionarAulaCommand}" />
 
         <CollectionView ItemsSource="{Binding Aulas}">
             <CollectionView.ItemTemplate>
@@ -19,15 +21,26 @@
                         <StackLayout>
                             <Label Text="{Binding Resumo}" FontSize="16" FontAttributes="Bold" />
                             <Label Text="{Binding Descricao}" FontSize="14" TextColor="Gray"/>
+
                             <HorizontalStackLayout Spacing="10">
-                                <Button Text="Editar" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AulasViewModel}}, Path=EditarAulaCommand}" CommandParameter="{Binding}" />
-                                <Button Text="Excluir" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AulasViewModel}}, Path=ExcluirAulaCommand}" CommandParameter="{Binding}" />
+                                <Button Text="Editar"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditarAulaCommand}"
+                                        CommandParameter="{Binding}" />
+
+                                <Button Text="Excluir"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirAulaCommand}"
+                                        CommandParameter="{Binding}" />
+
+                                <Button Text="Gerenciar Alunos"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.GerenciarAlunosCommand}"
+                                        CommandParameter="{Binding}" />
+                                
+
                             </HorizontalStackLayout>
                         </StackLayout>
                     </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-
     </VerticalStackLayout>
 </ContentPage>

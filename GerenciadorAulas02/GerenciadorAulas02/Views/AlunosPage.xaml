@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="GerenciadorAulas02.Views.AlunosPage"
+    x:Name="ThisPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Alunos">
+
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Cadastro de Alunos"
+               FontSize="20"
+               HorizontalOptions="Center" />
+
+        <Button Text="Adicionar Aluno"
+                Command="{Binding AdicionarAlunoCommand}" />
+
+        <CollectionView ItemsSource="{Binding Alunos}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BorderColor="Gray" Padding="10" Margin="5">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Nome}" FontSize="18" />
+                            <Label Text="{Binding Email}" FontSize="14" TextColor="Gray"/>
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="Excluir"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirAlunoCommand}"
+                                        CommandParameter="{Binding}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

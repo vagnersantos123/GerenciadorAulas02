@@ -19,7 +19,6 @@ public partial class App : Application
         string dbPath = Path.Combine(FileSystem.AppDataDirectory, "GerenciadorAulas.db3");
         Database = new AulaDatabase(dbPath);
 
-        S
 
         // Página inicial
         MainPage = new NavigationPage(new Views.LoginPage());

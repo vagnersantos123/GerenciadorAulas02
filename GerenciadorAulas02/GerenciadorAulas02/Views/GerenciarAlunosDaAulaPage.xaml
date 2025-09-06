@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="GerenciadorAulas02.Views.GerenciarAlunosDaAulaPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Name="ThisPage"
+    Title="Gerenciar Alunos da Aula">
+
+    <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="White">
+
+        <Label Text="Selecione os alunos desta aula"
+               FontSize="18"
+               HorizontalOptions="Center" />
+
+        <CollectionView ItemsSource="{Binding TodosAlunos}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10"
+                          ColumnDefinitions="50, *"
+                          BackgroundColor="LightYellow"
+                          Margin="0,2">
+                        <!-- CheckBox bem visível -->
+                        <CheckBox 
+                            Grid.Column="0"
+                            IsChecked="{Binding IsSelecionado, Mode=TwoWay}" 
+                            Color="Red"
+                            BackgroundColor="LightGray"
+                            WidthRequest="30"
+                            HeightRequest="30"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                        <!-- Nome do aluno -->
+                        <Label 
+                            Grid.Column="1"
+                            Text="{Binding Nome}" 
+                            VerticalOptions="Center"
+                            FontSize="16"
+                            TextColor="Black" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Text="Salvar Alterações"
+                BackgroundColor="DodgerBlue"
+                TextColor="White"
+                Command="{Binding SalvarCommand}" />
+    </VerticalStackLayout>
+</ContentPage>

@@ -12,12 +12,17 @@ public class AulasViewModel
     public ICommand AdicionarAulaCommand { get; }
     public ICommand ExcluirAulaCommand { get; }
     public ICommand EditarAulaCommand { get; }
+    public ICommand AbrirAlunosCommand { get; }
+    public ICommand GerenciarAlunosCommand { get; }
 
     public AulasViewModel()
     {
         AdicionarAulaCommand = new Command(AdicionarAula);
         ExcluirAulaCommand = new Command<Aula>(ExcluirAula);
         EditarAulaCommand = new Command<Aula>(EditarAula);
+        AbrirAlunosCommand = new Command<Aula>(AbrirAlunos);
+        GerenciarAlunosCommand = new Command<Aula>(GerenciarAlunos);
+
 
         // ⚡ garante que as aulas existentes sejam carregadas
         LoadAulas();
@@ -25,7 +30,7 @@ public class AulasViewModel
 
     private async void LoadAulas()
     {
-        
+
 
         var aulas = await App.Database.GetAulasAsync();
 
@@ -86,5 +91,22 @@ public class AulasViewModel
                 LoadAulas(); // recarrega a lista
             }
         }
+    }
+    private async void AbrirAlunos(Aula aula)
+    {
+        if (aula != null)
+        {
+            await Application.Current.MainPage.Navigation.PushAsync(new Views.AlunosPage());
+        }
+    }
+    private async void GerenciarAlunos(Aula aula)
+    {
+        if (aula != null)
+        {
+            await Application.Current.MainPage.Navigation.PushAsync(
+                new Views.GerenciarAlunosDaAulaPage(aula)
+            );
+        }
+
     }
 }
