@@ -5,22 +5,22 @@ namespace GerenciadorAulas02.Services;
 
 public class AulaDatabase
 {
-    // 🔹 Aqui está a variável que faltava
     private readonly SQLiteAsyncConnection _database;
 
     public AulaDatabase(string dbPath)
     {
         _database = new SQLiteAsyncConnection(dbPath);
 
-        // Cria as tabelas no banco, se ainda não existirem
+        // 🔹 Criação das tabelas
         _database.CreateTableAsync<Aula>().Wait();
         _database.CreateTableAsync<Aluno>().Wait();
         _database.CreateTableAsync<AulaAluno>().Wait();
+        _database.CreateTableAsync<SalaDeAula>().Wait(); // agora temos salas
     }
 
-    // ====================
-    // CRUD AULA
-    // ====================
+    // ====================================================
+    // CRUD AULAS
+    // ====================================================
     public Task<List<Aula>> GetAulasAsync()
     {
         return _database.Table<Aula>().ToListAsync();
@@ -39,9 +39,17 @@ public class AulaDatabase
         return _database.DeleteAsync(aula);
     }
 
-    // ====================
-    // CRUD ALUNO (GLOBAL)
-    // ====================
+    // 🔹 Buscar aulas por sala
+    public Task<List<Aula>> GetAulasBySalaAsync(int salaId)
+    {
+        return _database.Table<Aula>()
+                        .Where(a => a.SalaDeAulaId == salaId)
+                        .ToListAsync();
+    }
+
+    // ====================================================
+    // CRUD ALUNOS (GLOBAL)
+    // ====================================================
     public Task<List<Aluno>> GetTodosAlunosAsync()
     {
         return _database.Table<Aluno>().ToListAsync();
@@ -60,9 +68,9 @@ public class AulaDatabase
         return _database.DeleteAsync(aluno);
     }
 
-    // ====================
+    // ====================================================
     // RELAÇÃO AULA x ALUNO (N:N)
-    // ====================
+    // ====================================================
     public Task<int> AddAlunoToAulaAsync(int aulaId, int alunoId)
     {
         var relacao = new AulaAluno { AulaId = aulaId, AlunoId = alunoId };
@@ -89,16 +97,24 @@ public class AulaDatabase
                 select aluno).ToList();
     }
 
-    // ====================
-    // Métodos compatíveis (para não quebrar código antigo)
-    // ====================
-    public Task<List<Aluno>> GetAlunosAsync()
+    // ====================================================
+    // CRUD SALAS
+    // ====================================================
+    public Task<List<SalaDeAula>> GetSalasAsync()
     {
-        return GetTodosAlunosAsync();
+        return _database.Table<SalaDeAula>().ToListAsync();
     }
 
-    public Task<List<Aluno>> GetAlunosAsync(int aulaId)
+    public Task<int> SaveSalaAsync(SalaDeAula sala)
     {
-        return GetAlunosByAulaAsync(aulaId);
+        if (sala.Id != 0)
+            return _database.UpdateAsync(sala);
+        else
+            return _database.InsertAsync(sala);
+    }
+
+    public Task<int> DeleteSalaAsync(SalaDeAula sala)
+    {
+        return _database.DeleteAsync(sala);
     }
 }

@@ -1,4 +1,7 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using GerenciadorAulas02.Models;
@@ -7,106 +10,126 @@ namespace GerenciadorAulas02.ViewModels;
 
 public class AulasViewModel
 {
-    public ObservableCollection<Aula> Aulas { get; private set; } = new ObservableCollection<Aula>();
+    public ObservableCollection<Aula> Aulas { get; } = new();
 
     public ICommand AdicionarAulaCommand { get; }
     public ICommand ExcluirAulaCommand { get; }
     public ICommand EditarAulaCommand { get; }
-    public ICommand AbrirAlunosCommand { get; }
     public ICommand GerenciarAlunosCommand { get; }
 
+    private readonly SalaDeAula? sala;
+
+    // ----------------------------
+    // Construtor sem parâmetros
+    // ----------------------------
     public AulasViewModel()
     {
-        AdicionarAulaCommand = new Command(AdicionarAula);
-        ExcluirAulaCommand = new Command<Aula>(ExcluirAula);
-        EditarAulaCommand = new Command<Aula>(EditarAula);
-        AbrirAlunosCommand = new Command<Aula>(AbrirAlunos);
-        GerenciarAlunosCommand = new Command<Aula>(GerenciarAlunos);
+        AdicionarAulaCommand = new Command(async () => await AdicionarAula());
+        ExcluirAulaCommand = new Command<Aula>(async (a) => await ExcluirAula(a));
+        EditarAulaCommand = new Command<Aula>(async (a) => await EditarAula(a));
+        GerenciarAlunosCommand = new Command<Aula>(async (a) => await GerenciarAlunos(a));
 
-
-        // ⚡ garante que as aulas existentes sejam carregadas
-        LoadAulas();
+        _ = LoadAulas(); // fire-and-forget (carrega todas as aulas)
     }
 
-    private async void LoadAulas()
+    // ----------------------------
+    // Construtor que recebe a SalaDeAula
+    // ----------------------------
+    public AulasViewModel(SalaDeAula salaSelecionada) : this()
     {
+        sala = salaSelecionada ?? throw new ArgumentNullException(nameof(salaSelecionada));
+        _ = LoadAulasForSala(); // carrega aulas da sala
+    }
 
-
-        var aulas = await App.Database.GetAulasAsync();
-
-        Aulas.Clear(); // limpa a coleção atual sem recriar
-        foreach (var aula in aulas)
+    #region Carregamento
+    private async Task LoadAulas()
+    {
+        try
         {
-            Aulas.Add(aula); // adiciona as aulas salvas do banco
+            var aulas = await App.Database.GetAulasAsync();
+            Aulas.Clear();
+            foreach (var a in aulas) Aulas.Add(a);
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert("Erro", $"Erro ao carregar aulas: {ex.Message}", "OK");
         }
     }
 
-    private async void AdicionarAula()
+    private async Task LoadAulasForSala()
+    {
+        if (sala == null)
+        {
+            await LoadAulas();
+            return;
+        }
+
+        try
+        {
+            var aulas = await App.Database.GetAulasBySalaAsync(sala.Id);
+            Aulas.Clear();
+            foreach (var a in aulas) Aulas.Add(a);
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert("Erro", $"Erro ao carregar aulas da sala: {ex.Message}", "OK");
+        }
+    }
+    #endregion
+
+    #region CRUD
+    private async Task AdicionarAula()
     {
         string titulo = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Título da aula:");
-        if (string.IsNullOrWhiteSpace(titulo))
-            return;
+        if (string.IsNullOrWhiteSpace(titulo)) return;
 
         string tipo = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Tipo (Teórica/Prática):", initialValue: "Teórica");
         string duracaoStr = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Duração em minutos:", initialValue: "60");
+        if (!double.TryParse(duracaoStr, out double minutos)) minutos = 60;
 
-        if (!double.TryParse(duracaoStr, out double minutos))
-            minutos = 60;
-
-        Aula novaAula = new Aula
+        var aula = new Aula
         {
             Titulo = titulo,
             Descricao = "Descrição da aula",
             Data = DateTime.Now,
-            Tipo = tipo,
-            Duracao = TimeSpan.FromMinutes(minutos)
+            Tipo = tipo ?? "Teórica",
+            Duracao = TimeSpan.FromMinutes(minutos),
+            SalaDeAulaId = sala?.Id // 🔹 agora é opcional
         };
 
-        await App.Database.SaveAulaAsync(novaAula); // salva no banco
-        LoadAulas(); // recarrega a lista inteira (inclui a nova)
+        await App.Database.SaveAulaAsync(aula);
+
+        if (sala != null) await LoadAulasForSala(); else await LoadAulas();
     }
 
-    private async void ExcluirAula(Aula aula)
+    private async Task ExcluirAula(Aula aula)
     {
-        if (aula != null)
+        if (aula == null) return;
+
+        await App.Database.DeleteAulaAsync(aula);
+
+        if (sala != null) await LoadAulasForSala(); else await LoadAulas();
+    }
+
+    private async Task EditarAula(Aula aula)
+    {
+        if (aula == null) return;
+
+        string novoTitulo = await Application.Current.MainPage.DisplayPromptAsync("Editar Aula", "Novo título:", initialValue: aula.Titulo);
+        if (!string.IsNullOrWhiteSpace(novoTitulo))
         {
-            await App.Database.DeleteAulaAsync(aula); // remove do banco
-            LoadAulas(); // recarrega a lista do banco
+            aula.Titulo = novoTitulo;
+            await App.Database.SaveAulaAsync(aula);
+
+            if (sala != null) await LoadAulasForSala(); else await LoadAulas();
         }
     }
 
-    private async void EditarAula(Aula aula)
+    private async Task GerenciarAlunos(Aula aula)
     {
-        if (aula != null)
-        {
-            string novoTitulo = await Application.Current.MainPage.DisplayPromptAsync(
-                "Editar Aula",
-                "Novo título:",
-                initialValue: aula.Titulo);
+        if (aula == null) return;
 
-            if (!string.IsNullOrWhiteSpace(novoTitulo))
-            {
-                aula.Titulo = novoTitulo;
-                await App.Database.SaveAulaAsync(aula); // atualiza no banco
-                LoadAulas(); // recarrega a lista
-            }
-        }
+        await Application.Current.MainPage.Navigation.PushAsync(new Views.GerenciarAlunosDaAulaPage(aula));
     }
-    private async void AbrirAlunos(Aula aula)
-    {
-        if (aula != null)
-        {
-            await Application.Current.MainPage.Navigation.PushAsync(new Views.AlunosPage());
-        }
-    }
-    private async void GerenciarAlunos(Aula aula)
-    {
-        if (aula != null)
-        {
-            await Application.Current.MainPage.Navigation.PushAsync(
-                new Views.GerenciarAlunosDaAulaPage(aula)
-            );
-        }
-
-    }
+    #endregion
 }

@@ -18,6 +18,8 @@ public partial class App : Application
         // Caminho do arquivo SQLite
         string dbPath = Path.Combine(FileSystem.AppDataDirectory, "GerenciadorAulas.db3");
         Database = new AulaDatabase(dbPath);
+        System.Diagnostics.Debug.WriteLine($"DB Path: {dbPath}");
+
 
 
         // Página inicial

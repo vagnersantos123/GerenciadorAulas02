@@ -7,55 +7,63 @@ namespace GerenciadorAulas02.Models;
 
 public class Aula : INotifyPropertyChanged
 {
-
     private int id;
+    private string titulo = string.Empty;
+    private string descricao = string.Empty;
+    private DateTime data;
+    private TimeSpan duracao;
+    private string tipo = "Teórica";
+    private int? salaDeAulaId; // 🔹 agora é opcional (nullable)
 
-    [PrimaryKey, AutoIncrement] 
+    [PrimaryKey, AutoIncrement]
     public int Id
     {
         get => id;
         set { id = value; OnPropertyChanged(nameof(Id)); }
     }
 
-    private string titulo = string.Empty;
     public string Titulo
     {
         get => titulo;
         set { titulo = value; OnPropertyChanged(nameof(Titulo)); }
     }
 
-    private string descricao = string.Empty;
     public string Descricao
     {
         get => descricao;
         set { descricao = value; OnPropertyChanged(nameof(Descricao)); }
     }
 
-    private DateTime data;
     public DateTime Data
     {
         get => data;
         set { data = value; OnPropertyChanged(nameof(Data)); }
     }
 
-    private TimeSpan duracao;
     public TimeSpan Duracao
     {
         get => duracao;
         set { duracao = value; OnPropertyChanged(nameof(Duracao)); }
     }
 
-    private string tipo = "Teórica";
     public string Tipo
     {
         get => tipo;
         set { tipo = value; OnPropertyChanged(nameof(Tipo)); }
     }
 
+    // 🔹 Chave estrangeira para SalaDeAula (opcional)
+    public int? SalaDeAulaId
+    {
+        get => salaDeAulaId;
+        set { salaDeAulaId = value; OnPropertyChanged(nameof(SalaDeAulaId)); }
+    }
+
     [Ignore]
     public List<string> AlunosPresentes { get; set; } = new List<string>();
 
-    // Método de resumo da aula
+    // 🔹 Resumo automático
+    [Ignore]
     public string Resumo => $"{Titulo} ({Tipo}) - {Data:dd/MM/yyyy HH:mm}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
 
     public event PropertyChangedEventHandler PropertyChanged;

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="GerenciadorAulas02.Views.SalasPage"
+    x:Name="ThisPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Gerenciar Salas">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="10">
+
+            <Label Text="Salas de Aula"
+                   FontSize="20"
+                   HorizontalOptions="Center" />
+
+            <Button Text="Adicionar Sala"
+                    Command="{Binding AdicionarSalaCommand}" />
+
+            <CollectionView ItemsSource="{Binding Salas}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="LightGray" Padding="10" Margin="5">
+                            <VerticalStackLayout Spacing="5">
+
+                                <Label Text="{Binding Nome}"
+                                       FontSize="18"
+                                       FontAttributes="Bold" />
+
+                                <Label Text="{Binding Descricao}"
+                                       FontSize="14"
+                                       TextColor="Gray" />
+
+                                <HorizontalStackLayout Spacing="10">
+                                    <Button Text="Ver Aulas"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.AbrirAulasCommand}"
+                                            CommandParameter="{Binding}" />
+
+                                    <Button Text="Excluir"
+                                            TextColor="Red"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirSalaCommand}"
+                                            CommandParameter="{Binding}" />
+                                </HorizontalStackLayout>
+
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

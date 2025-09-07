@@ -6,9 +6,7 @@
              x:Name="ThisPage"
              Title="Minhas Aulas">
 
-    <ContentPage.BindingContext>
-        <viewmodels:AulasViewModel />
-    </ContentPage.BindingContext>
+    
 
     <VerticalStackLayout Padding="20" Spacing="15">
         <Button Text="Adicionar Aula" 

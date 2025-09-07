@@ -23,5 +23,10 @@ public partial class HomePage : ContentPage
     {
         await Navigation.PushAsync(new Views.AlunosPage());
     }
+    private async void OnGerenciarSalasClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new Views.SalasPage());
+    }
+
 
 }
