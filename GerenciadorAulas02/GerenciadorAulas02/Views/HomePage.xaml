@@ -11,8 +11,10 @@
 
         <Button Text="Gerenciar Aulas" Clicked="OnGerenciarAulasClicked" />
         <Button Text="Gerenciar Alunos" Clicked="OnGerenciarAlunosClicked" />
-        <Button Text="Sair" Clicked="OnSairClicked" />
         <Button Text="Gerenciar Salas" Clicked="OnGerenciarSalasClicked" />
+        <Button Text="Config" Clicked="OnConfiguracoesClicked" />
+        <Button Text="Sair" Clicked="OnSairClicked" />
+        
 
 
 

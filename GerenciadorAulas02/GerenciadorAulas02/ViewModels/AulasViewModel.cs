@@ -3,25 +3,41 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using GerenciadorAulas02.Models;
 
 namespace GerenciadorAulas02.ViewModels;
 
-public class AulasViewModel
+public class AulasViewModel : INotifyPropertyChanged
 {
     public ObservableCollection<Aula> Aulas { get; } = new();
+    public ObservableCollection<Materia> Materias { get; } = new();
 
+    // Commands
     public ICommand AdicionarAulaCommand { get; }
     public ICommand ExcluirAulaCommand { get; }
     public ICommand EditarAulaCommand { get; }
     public ICommand GerenciarAlunosCommand { get; }
 
-    private readonly SalaDeAula? sala;
+    private SalaDeAula? sala;
 
-    // ----------------------------
-    // Construtor sem parâmetros
-    // ----------------------------
+    // Materia selecionada para o Picker
+    private Materia? materiaSelecionada;
+    public Materia? MateriaSelecionada
+    {
+        get => materiaSelecionada;
+        set
+        {
+            if (materiaSelecionada != value)
+            {
+                materiaSelecionada = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public AulasViewModel()
     {
         AdicionarAulaCommand = new Command(async () => await AdicionarAula());
@@ -29,16 +45,14 @@ public class AulasViewModel
         EditarAulaCommand = new Command<Aula>(async (a) => await EditarAula(a));
         GerenciarAlunosCommand = new Command<Aula>(async (a) => await GerenciarAlunos(a));
 
-        _ = LoadAulas(); // fire-and-forget (carrega todas as aulas)
+        _ = LoadAulas();
+        _ = LoadMaterias();
     }
 
-    // ----------------------------
-    // Construtor que recebe a SalaDeAula
-    // ----------------------------
     public AulasViewModel(SalaDeAula salaSelecionada) : this()
     {
         sala = salaSelecionada ?? throw new ArgumentNullException(nameof(salaSelecionada));
-        _ = LoadAulasForSala(); // carrega aulas da sala
+        _ = LoadAulasForSala();
     }
 
     #region Carregamento
@@ -46,7 +60,7 @@ public class AulasViewModel
     {
         try
         {
-            var aulas = await App.Database.GetAulasAsync();
+            var aulas = await App.Database.GetAulasComMateriasAsync();
             Aulas.Clear();
             foreach (var a in aulas) Aulas.Add(a);
         }
@@ -66,7 +80,7 @@ public class AulasViewModel
 
         try
         {
-            var aulas = await App.Database.GetAulasBySalaAsync(sala.Id);
+            var aulas = await App.Database.GetAulasBySalaComMateriasAsync(sala.Id);
             Aulas.Clear();
             foreach (var a in aulas) Aulas.Add(a);
         }
@@ -75,26 +89,58 @@ public class AulasViewModel
             await Application.Current.MainPage.DisplayAlert("Erro", $"Erro ao carregar aulas da sala: {ex.Message}", "OK");
         }
     }
+
+    private async Task LoadMaterias()
+    {
+        try
+        {
+            var materias = await App.Database.GetMateriasAsync();
+            Materias.Clear();
+            foreach (var m in materias) Materias.Add(m);
+
+            if (Materias.Count > 0 && MateriaSelecionada == null)
+                MateriaSelecionada = Materias.First();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert("Erro", $"Erro ao carregar matérias: {ex.Message}", "OK");
+        }
+    }
     #endregion
 
     #region CRUD
     private async Task AdicionarAula()
     {
-        string titulo = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Título da aula:");
-        if (string.IsNullOrWhiteSpace(titulo)) return;
+        if (MateriaSelecionada == null)
+        {
+            await Application.Current.MainPage.DisplayAlert("Aviso", "Selecione uma matéria antes de adicionar a aula.", "OK");
+            return;
+        }
 
         string tipo = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Tipo (Teórica/Prática):", initialValue: "Teórica");
-        string duracaoStr = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Duração em minutos:", initialValue: "60");
-        if (!double.TryParse(duracaoStr, out double minutos)) minutos = 60;
+
+        // duração padrão vem de PreferenciasGlobais
+        int duracaoPadrao = Services.PreferenciasGlobais.DuracaoPadrao;
+
+        string duracaoStr = await Application.Current.MainPage.DisplayPromptAsync(
+            "Nova Aula",
+            "Duração em minutos:",
+            initialValue: duracaoPadrao.ToString()
+        );
+
+        if (!double.TryParse(duracaoStr, out double minutos))
+            minutos = duracaoPadrao;
 
         var aula = new Aula
         {
-            Titulo = titulo,
+            Titulo = MateriaSelecionada.Nome,
+            MateriaId = MateriaSelecionada.Id,
+            Materia = MateriaSelecionada,
             Descricao = "Descrição da aula",
             Data = DateTime.Now,
             Tipo = tipo ?? "Teórica",
             Duracao = TimeSpan.FromMinutes(minutos),
-            SalaDeAulaId = sala?.Id // 🔹 agora é opcional
+            SalaDeAulaId = sala?.Id
         };
 
         await App.Database.SaveAulaAsync(aula);
@@ -131,5 +177,11 @@ public class AulasViewModel
 
         await Application.Current.MainPage.Navigation.PushAsync(new Views.GerenciarAlunosDaAulaPage(aula));
     }
+    #endregion
+
+    #region INotifyPropertyChanged
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     #endregion
 }

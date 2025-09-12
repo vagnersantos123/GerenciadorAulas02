@@ -6,12 +6,20 @@
              x:Name="ThisPage"
              Title="Minhas Aulas">
 
-    
-
     <VerticalStackLayout Padding="20" Spacing="15">
+
+        <!-- 🔹 Picker para selecionar a matéria -->
+        <Label Text="Selecione a matéria:" FontSize="16" />
+        <Picker Title="Matéria"
+                ItemsSource="{Binding Materias}"
+                ItemDisplayBinding="{Binding Nome}"
+                SelectedItem="{Binding MateriaSelecionada}" />
+
+        <!-- Botão de adicionar aula -->
         <Button Text="Adicionar Aula" 
                 Command="{Binding AdicionarAulaCommand}" />
 
+        <!-- Lista de aulas -->
         <CollectionView ItemsSource="{Binding Aulas}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
@@ -32,8 +40,6 @@
                                 <Button Text="Gerenciar Alunos"
                                         Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.GerenciarAlunosCommand}"
                                         CommandParameter="{Binding}" />
-                                
-
                             </HorizontalStackLayout>
                         </StackLayout>
                     </Frame>

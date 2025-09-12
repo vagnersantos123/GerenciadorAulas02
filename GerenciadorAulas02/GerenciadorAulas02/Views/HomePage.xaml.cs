@@ -17,16 +17,21 @@ public partial class HomePage : ContentPage
 
     private async void OnGerenciarAulasClicked(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new Views.AulasPage());
+        await Navigation.PushAsync(new AulasPage());
     }
-    private async void OnGerenciarAlunosClicked(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new Views.AlunosPage());
-    }
+
     private async void OnGerenciarSalasClicked(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new Views.SalasPage());
+        await Navigation.PushAsync(new SalasPage());
     }
 
+    private async void OnGerenciarAlunosClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new AlunosPage());
+    }
 
+    private async void OnConfiguracoesClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new ConfiguracoesPage());
+    }
 }

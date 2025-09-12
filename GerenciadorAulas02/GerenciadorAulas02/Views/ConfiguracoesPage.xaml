@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
+             x:Class="GerenciadorAulas02.Views.ConfiguracoesPage"
+             x:Name="ThisPage"
+             Title="Configurações">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="25">
+
+            <!-- ================= MATÉRIAS ================= -->
+            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Matérias" FontSize="20" FontAttributes="Bold" />
+
+                    <Button Text="Adicionar Matéria"
+                            Command="{Binding AdicionarMateriaCommand}" />
+
+                    <CollectionView ItemsSource="{Binding Materias}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame BorderColor="LightGray" Padding="8" Margin="4">
+                                    <StackLayout Orientation="Horizontal" Spacing="10">
+                                        <Label Text="{Binding Nome}" VerticalOptions="Center" FontSize="16" />
+                                        <Button Text="Excluir"
+                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirMateriaCommand}"
+                                                CommandParameter="{Binding}" />
+                                    </StackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- ================= FUTURAS CONFIGURAÇÕES ================= -->
+            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Preferências Gerais" FontSize="20" FontAttributes="Bold" />
+
+                    <!-- Exemplo: duração padrão das aulas -->
+                    <HorizontalStackLayout>
+                        <Label Text="Duração padrão (min)" VerticalOptions="Center"/>
+                        <Entry Text="{Binding DuracaoPadrao}" 
+                               Keyboard="Numeric" WidthRequest="80"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Exemplo: alternar tema -->
+                    <HorizontalStackLayout>
+                        <Label Text="Tema escuro" VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding TemaEscuro}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -16,6 +16,9 @@ public class AulaDatabase
         _database.CreateTableAsync<Aluno>().Wait();
         _database.CreateTableAsync<AulaAluno>().Wait();
         _database.CreateTableAsync<SalaDeAula>().Wait(); // agora temos salas
+        _database.CreateTableAsync<Materia>().Wait();
+
+
     }
 
     // ====================================================
@@ -40,12 +43,20 @@ public class AulaDatabase
     }
 
     // 🔹 Buscar aulas por sala
-    public Task<List<Aula>> GetAulasBySalaAsync(int salaId)
+    public async Task<List<Aula>> GetAulasComMateriasAsync()
     {
-        return _database.Table<Aula>()
-                        .Where(a => a.SalaDeAulaId == salaId)
-                        .ToListAsync();
+        var aulas = await _database.Table<Aula>().ToListAsync();
+        var materias = await _database.Table<Materia>().ToListAsync();
+
+        // 🔹 junta a Aula com a Materia correspondente
+        foreach (var aula in aulas)
+        {
+            aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
+        }
+
+        return aulas;
     }
+
 
     // ====================================================
     // CRUD ALUNOS (GLOBAL)
@@ -71,6 +82,7 @@ public class AulaDatabase
     // ====================================================
     // RELAÇÃO AULA x ALUNO (N:N)
     // ====================================================
+    #region RELAÇÃO AULA x ALUNO (N:N)
     public Task<int> AddAlunoToAulaAsync(int aulaId, int alunoId)
     {
         var relacao = new AulaAluno { AulaId = aulaId, AlunoId = alunoId };
@@ -96,10 +108,9 @@ public class AulaDatabase
                 join aluno in alunos on rel.AlunoId equals aluno.Id
                 select aluno).ToList();
     }
+    #endregion
 
-    // ====================================================
-    // CRUD SALAS
-    // ====================================================
+    #region Crud Salas
     public Task<List<SalaDeAula>> GetSalasAsync()
     {
         return _database.Table<SalaDeAula>().ToListAsync();
@@ -117,4 +128,40 @@ public class AulaDatabase
     {
         return _database.DeleteAsync(sala);
     }
+    #endregion
+
+    
+    #region Materias
+    public Task<List<Materia>> GetMateriasAsync()
+    {
+        return _database.Table<Materia>().ToListAsync();
+    }
+
+    public Task<int> SaveMateriaAsync(Materia materia)
+    {
+        if (materia.Id != 0)
+            return _database.UpdateAsync(materia);
+        else
+            return _database.InsertAsync(materia);
+    }
+
+    public Task<int> DeleteMateriaAsync(Materia materia)
+    {
+        return _database.DeleteAsync(materia);
+    }
+    #endregion
+    public async Task<List<Aula>> GetAulasBySalaComMateriasAsync(int salaId)
+    {
+        var aulas = await _database.Table<Aula>().Where(a => a.SalaDeAulaId == salaId).ToListAsync();
+        var materias = await _database.Table<Materia>().ToListAsync();
+
+        foreach (var aula in aulas)
+        {
+            aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
+        }
+
+        return aulas;
+    }
+
+
 }

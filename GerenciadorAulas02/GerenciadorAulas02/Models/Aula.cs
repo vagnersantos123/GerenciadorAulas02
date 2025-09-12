@@ -13,7 +13,8 @@ public class Aula : INotifyPropertyChanged
     private DateTime data;
     private TimeSpan duracao;
     private string tipo = "Teórica";
-    private int? salaDeAulaId; // 🔹 agora é opcional (nullable)
+    private int? salaDeAulaId;   // <- aqui a FK
+    private int? materiaId;      // FK para matéria (se tiver)
 
     [PrimaryKey, AutoIncrement]
     public int Id
@@ -52,23 +53,31 @@ public class Aula : INotifyPropertyChanged
         set { tipo = value; OnPropertyChanged(nameof(Tipo)); }
     }
 
-    // 🔹 Chave estrangeira para SalaDeAula (opcional)
+    // Chave estrangeira para SalaDeAula (nullable)
     public int? SalaDeAulaId
     {
         get => salaDeAulaId;
         set { salaDeAulaId = value; OnPropertyChanged(nameof(SalaDeAulaId)); }
     }
 
+    // Chave estrangeira para Materia (nullable)
+    public int? MateriaId
+    {
+        get => materiaId;
+        set { materiaId = value; OnPropertyChanged(nameof(MateriaId)); }
+    }
+
+    // Propriedades não persistidas (apenas para navegação / UI)
+    [Ignore]
+    public Materia? Materia { get; set; }
+
     [Ignore]
     public List<string> AlunosPresentes { get; set; } = new List<string>();
 
-    // 🔹 Resumo automático
     [Ignore]
-    public string Resumo => $"{Titulo} ({Tipo}) - {Data:dd/MM/yyyy HH:mm}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
+    public string Resumo => $"{(Materia != null ? Materia.Nome : Titulo)} ({Tipo}) - {Data:dd/MM/yyyy HH:mm}, {Duracao.TotalMinutes} min";
 
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged(string nome)
-    {
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged(string nome) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nome));
-    }
 }

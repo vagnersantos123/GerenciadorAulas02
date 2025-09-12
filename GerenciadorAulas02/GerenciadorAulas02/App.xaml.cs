@@ -20,6 +20,9 @@ public partial class App : Application
         Database = new AulaDatabase(dbPath);
         System.Diagnostics.Debug.WriteLine($"DB Path: {dbPath}");
 
+        Application.Current.UserAppTheme = Services.PreferenciasGlobais.TemaEscuro ? AppTheme.Dark : AppTheme.Light;
+
+
 
 
         // Página inicial
