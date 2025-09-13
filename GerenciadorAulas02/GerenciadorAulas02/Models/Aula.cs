@@ -13,8 +13,10 @@ public class Aula : INotifyPropertyChanged
     private DateTime data;
     private TimeSpan duracao;
     private string tipo = "Teórica";
-    private int? salaDeAulaId;   // <- aqui a FK
-    private int? materiaId;      // FK para matéria (se tiver)
+
+    private int? salaDeAulaId;
+    private int? materiaId;
+    private Materia? materia; // 🔹 backing field da matéria
 
     [PrimaryKey, AutoIncrement]
     public int Id
@@ -53,31 +55,54 @@ public class Aula : INotifyPropertyChanged
         set { tipo = value; OnPropertyChanged(nameof(Tipo)); }
     }
 
-    // Chave estrangeira para SalaDeAula (nullable)
+    // 🔹 Chave estrangeira para Sala
     public int? SalaDeAulaId
     {
-        get => salaDeAulaId;
+        get => salaDeAulaId ?? 0;
         set { salaDeAulaId = value; OnPropertyChanged(nameof(SalaDeAulaId)); }
     }
 
-    // Chave estrangeira para Materia (nullable)
+    // 🔹 Chave estrangeira para Matéria
     public int? MateriaId
     {
-        get => materiaId;
+        get => materiaId ?? 0;
         set { materiaId = value; OnPropertyChanged(nameof(MateriaId)); }
     }
 
-    // Propriedades não persistidas (apenas para navegação / UI)
+    // 🔹 Propriedade de navegação (não mapeada no SQLite)
     [Ignore]
-    public Materia? Materia { get; set; }
+    public Materia? Materia
+    {
+        get => materia;
+        set
+        {
+            materia = value;
+            OnPropertyChanged(nameof(Materia));
+
+            // ✅ Se a Aula ainda não tem duração definida, pega a da Matéria
+            if (materia != null && duracao == default)
+            {
+                Duracao = TimeSpan.FromMinutes(materia.Duracao);
+            }
+        }
+    }
 
     [Ignore]
     public List<string> AlunosPresentes { get; set; } = new List<string>();
 
     [Ignore]
-    public string Resumo => $"{(Materia != null ? Materia.Nome : Titulo)} ({Tipo}) - {Data:dd/MM/yyyy HH:mm}, {Duracao.TotalMinutes} min";
+    public string Resumo
+    {
+        get
+        {
+            string materiaNome = Materia != null ? Materia.Nome : "Sem matéria";
+            return $"{Titulo} - {materiaNome} ({Tipo}) - {Data:dd/MM/yyyy HH:mm}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
+        }
+    }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-    protected void OnPropertyChanged(string nome) =>
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged(string nome)
+    {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nome));
+    }
 }

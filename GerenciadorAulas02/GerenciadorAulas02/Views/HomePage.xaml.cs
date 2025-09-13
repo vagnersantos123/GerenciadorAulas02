@@ -11,13 +11,7 @@ public partial class HomePage : ContentPage
 
     private async void OnSairClicked(object sender, EventArgs e)
     {
-        // Voltar para a LoginPage
         await Navigation.PopToRootAsync();
-    }
-
-    private async void OnGerenciarAulasClicked(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new AulasPage());
     }
 
     private async void OnGerenciarSalasClicked(object sender, EventArgs e)
@@ -25,9 +19,9 @@ public partial class HomePage : ContentPage
         await Navigation.PushAsync(new SalasPage());
     }
 
-    private async void OnGerenciarAlunosClicked(object sender, EventArgs e)
+    private async void OnGerenciarAulasClicked(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new AlunosPage());
+        await Navigation.PushAsync(new AulasPage());
     }
 
     private async void OnConfiguracoesClicked(object sender, EventArgs e)

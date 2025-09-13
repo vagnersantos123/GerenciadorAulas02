@@ -6,45 +6,89 @@
              x:Name="ThisPage"
              Title="Minhas Aulas">
 
-    <VerticalStackLayout Padding="20" Spacing="15">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
 
-        <!-- 🔹 Picker para selecionar a matéria -->
-        <Label Text="Selecione a matéria:" FontSize="16" />
-        <Picker Title="Matéria"
-                ItemsSource="{Binding Materias}"
-                ItemDisplayBinding="{Binding Nome}"
-                SelectedItem="{Binding MateriaSelecionada}" />
+            <!-- =========================
+                 Formulário de Geração
+                 ========================= -->
+            <Frame BorderColor="Gray" Padding="10">
+                <VerticalStackLayout Spacing="8">
 
-        <!-- Botão de adicionar aula -->
-        <Button Text="Adicionar Aula" 
-                Command="{Binding AdicionarAulaCommand}" />
+                    <Label Text="Gerar Aulas para Matéria"
+                           FontAttributes="Bold"
+                           FontSize="18" />
 
-        <!-- Lista de aulas -->
-        <CollectionView ItemsSource="{Binding Aulas}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame BorderColor="Gray" Padding="10" Margin="5">
-                        <StackLayout>
-                            <Label Text="{Binding Resumo}" FontSize="16" FontAttributes="Bold" />
-                            <Label Text="{Binding Descricao}" FontSize="14" TextColor="Gray"/>
+                    <!-- Seleção da matéria -->
+                    <Picker Title="Selecione a Matéria"
+                            ItemsSource="{Binding Materias}"
+                            ItemDisplayBinding="{Binding Nome}"
+                            SelectedItem="{Binding MateriaSelecionada}" />
 
-                            <HorizontalStackLayout Spacing="10">
-                                <Button Text="Editar"
-                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditarAulaCommand}"
-                                        CommandParameter="{Binding}" />
+                    <!-- Quantidade -->
+                    <Entry Placeholder="Quantidade de aulas"
+                           Keyboard="Numeric"
+                           Text="{Binding QuantidadeAulas}" />
 
-                                <Button Text="Excluir"
-                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirAulaCommand}"
-                                        CommandParameter="{Binding}" />
+                    <!-- Data inicial -->
+                    <DatePicker Date="{Binding DataInicial}" />
 
-                                <Button Text="Gerenciar Alunos"
-                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.GerenciarAlunosCommand}"
-                                        CommandParameter="{Binding}" />
-                            </HorizontalStackLayout>
-                        </StackLayout>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </VerticalStackLayout>
+                    <!-- Intervalo -->
+                    <Entry Placeholder="Intervalo em dias"
+                           Keyboard="Numeric"
+                           Text="{Binding IntervaloDias}" />
+
+                    <!-- Duração -->
+                    <Entry Placeholder="Duração (minutos)"
+                           Keyboard="Numeric"
+                           Text="{Binding DuracaoMinutos}" />
+
+                    <!-- Botão gerar -->
+                    <Button Text="Gerar Aulas"
+                            Command="{Binding GerarAulasCommand}" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- =========================
+                 Lista de Aulas
+                 ========================= -->
+            <Label Text="Aulas cadastradas"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,10,0,5" />
+
+            <CollectionView ItemsSource="{Binding Aulas}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="Gray" Padding="10" Margin="5">
+                            <StackLayout>
+                                <Label Text="{Binding Resumo}"
+                                       FontSize="16"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding Descricao}"
+                                       FontSize="14"
+                                       TextColor="Gray" />
+
+                                <HorizontalStackLayout Spacing="10">
+                                    <Button Text="Editar"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditarAulaCommand}"
+                                            CommandParameter="{Binding}" />
+
+                                    <Button Text="Excluir"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirAulaCommand}"
+                                            CommandParameter="{Binding}" />
+
+                                    <Button Text="Gerenciar Alunos"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.GerenciarAlunosCommand}"
+                                            CommandParameter="{Binding}" />
+                                </HorizontalStackLayout>
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

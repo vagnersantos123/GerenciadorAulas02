@@ -1,47 +1,52 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="GerenciadorAulas02.Views.SalasPage"
-    x:Name="ThisPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Gerenciar Salas">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
+             x:Class="GerenciadorAulas02.Views.SalasPage"
+             x:Name="ThisPage"
+             Title="Salas de Aula">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="10">
+        <VerticalStackLayout Padding="20" Spacing="15">
 
-            <Label Text="Salas de Aula"
-                   FontSize="20"
-                   HorizontalOptions="Center" />
+            <!-- Formulário simples para adicionar uma sala -->
+            <Frame BorderColor="Gray" Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Adicionar Sala" FontAttributes="Bold" FontSize="18" />
 
-            <Button Text="Adicionar Sala"
-                    Command="{Binding AdicionarSalaCommand}" />
+                    <Entry Placeholder="Nome da Sala"
+                           Text="{Binding NomeSala}" />
+
+                    <Button Text="Adicionar Sala"
+                            Command="{Binding AdicionarSalaCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Lista de Salas -->
+            <Label Text="Salas cadastradas"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,10,0,5" />
 
             <CollectionView ItemsSource="{Binding Salas}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame BorderColor="LightGray" Padding="10" Margin="5">
-                            <VerticalStackLayout Spacing="5">
-
+                        <Frame BorderColor="Gray" Padding="10" Margin="5">
+                            <StackLayout>
                                 <Label Text="{Binding Nome}"
-                                       FontSize="18"
+                                       FontSize="16"
                                        FontAttributes="Bold" />
-
-                                <Label Text="{Binding Descricao}"
-                                       FontSize="14"
-                                       TextColor="Gray" />
 
                                 <HorizontalStackLayout Spacing="10">
                                     <Button Text="Ver Aulas"
-                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.AbrirAulasCommand}"
+                                            Clicked="OnVerAulasClicked"
                                             CommandParameter="{Binding}" />
 
                                     <Button Text="Excluir"
-                                            TextColor="Red"
                                             Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirSalaCommand}"
                                             CommandParameter="{Binding}" />
                                 </HorizontalStackLayout>
-
-                            </VerticalStackLayout>
+                            </StackLayout>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

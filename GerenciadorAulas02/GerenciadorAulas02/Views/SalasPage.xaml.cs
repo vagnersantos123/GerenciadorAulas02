@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls;
+using GerenciadorAulas02.Models;
 using GerenciadorAulas02.ViewModels;
 
 namespace GerenciadorAulas02.Views;
@@ -10,4 +11,13 @@ public partial class SalasPage : ContentPage
         InitializeComponent();
         BindingContext = new SalasViewModel();
     }
+
+    private async void OnVerAulasClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is SalaDeAula sala)
+        {
+            await Navigation.PushAsync(new AulasPage(sala));
+        }
+    }
 }
+    

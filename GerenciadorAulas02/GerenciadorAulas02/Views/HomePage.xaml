@@ -4,20 +4,18 @@
              x:Class="GerenciadorAulas02.Views.HomePage"
              Title="Home">
 
-    <VerticalStackLayout Padding="30" Spacing="15">
-        <Label Text="Bem-vindo ao Gerenciador de Aulas!" 
-               FontSize="24" 
-               HorizontalOptions="Center" />
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <Button Text="Gerenciar Salas"
+            Clicked="OnGerenciarSalasClicked" />
 
-        <Button Text="Gerenciar Aulas" Clicked="OnGerenciarAulasClicked" />
-        <Button Text="Gerenciar Alunos" Clicked="OnGerenciarAlunosClicked" />
-        <Button Text="Gerenciar Salas" Clicked="OnGerenciarSalasClicked" />
-        <Button Text="Config" Clicked="OnConfiguracoesClicked" />
-        <Button Text="Sair" Clicked="OnSairClicked" />
-        
+        <Button Text="Gerenciar Aulas"
+            Clicked="OnGerenciarAulasClicked" />
 
+        <Button Text="Configurações"
+            Clicked="OnConfiguracoesClicked" />
 
-
-
+        <Button Text="Sair"
+            Clicked="OnSairClicked" />
     </VerticalStackLayout>
+
 </ContentPage>

@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
@@ -6,19 +7,24 @@ using GerenciadorAulas02.Models;
 
 namespace GerenciadorAulas02.ViewModels;
 
-public class SalasViewModel
+public class SalasViewModel : BaseViewModel
 {
     public ObservableCollection<SalaDeAula> Salas { get; } = new();
 
+    private string nomeSala;
+    public string NomeSala
+    {
+        get => nomeSala;
+        set => SetProperty(ref nomeSala, value);
+    }
+
     public ICommand AdicionarSalaCommand { get; }
     public ICommand ExcluirSalaCommand { get; }
-    public ICommand AbrirAulasCommand { get; }
 
     public SalasViewModel()
     {
         AdicionarSalaCommand = new Command(async () => await AdicionarSala());
-        ExcluirSalaCommand = new Command<SalaDeAula>(async (sala) => await ExcluirSala(sala));
-        AbrirAulasCommand = new Command<SalaDeAula>(async (sala) => await AbrirAulas(sala));
+        ExcluirSalaCommand = new Command<SalaDeAula>(async (s) => await ExcluirSala(s));
 
         _ = LoadSalas();
     }
@@ -27,24 +33,27 @@ public class SalasViewModel
     {
         var salas = await App.Database.GetSalasAsync();
         Salas.Clear();
-        foreach (var s in salas)
-            Salas.Add(s);
+        foreach (var s in salas) Salas.Add(s);
     }
 
     private async Task AdicionarSala()
     {
-        string nome = await Application.Current.MainPage.DisplayPromptAsync("Nova Sala", "Nome da sala:");
-        if (string.IsNullOrWhiteSpace(nome)) return;
-
-        string descricao = await Application.Current.MainPage.DisplayPromptAsync("Descrição", "Descrição da sala:");
-
-        var sala = new SalaDeAula
+        if (string.IsNullOrWhiteSpace(NomeSala))
         {
-            Nome = nome,
-            Descricao = descricao ?? ""
+            await Application.Current.MainPage.DisplayAlert("Erro", "Digite um nome para a sala", "OK");
+            return;
+        }
+
+        var novaSala = new SalaDeAula
+        {
+            Nome = NomeSala
         };
 
-        await App.Database.SaveSalaAsync(sala);
+        await App.Database.SaveSalaAsync(novaSala);
+
+        NomeSala = string.Empty;
+        OnPropertyChanged(nameof(NomeSala));
+
         await LoadSalas();
     }
 
@@ -53,20 +62,13 @@ public class SalasViewModel
         if (sala == null) return;
 
         bool confirmar = await Application.Current.MainPage.DisplayAlert(
-            "Confirmar exclusão",
-            $"Deseja excluir a sala \"{sala.Nome}\"?",
+            "Confirmar",
+            $"Deseja excluir a sala {sala.Nome}?",
             "Sim", "Não");
 
         if (!confirmar) return;
 
         await App.Database.DeleteSalaAsync(sala);
         await LoadSalas();
-    }
-
-    private async Task AbrirAulas(SalaDeAula sala)
-    {
-        if (sala == null) return;
-
-        await Application.Current.MainPage.Navigation.PushAsync(new Views.AulasPage(sala));
     }
 }

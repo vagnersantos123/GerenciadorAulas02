@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
+             x:Class="GerenciadorAulas02.Views.DetalhesAulaPage"
+             Title="Detalhes da Aula">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <!-- Cabeçalho da aula -->
+            <Frame BorderColor="Gray" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="{Binding Aula.Titulo}"
+                           FontSize="20"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding Aula.Materia.Nome}"
+                           FontSize="16"
+                           TextColor="DarkBlue" />
+                    <Label Text="{Binding Aula.Data, StringFormat='Data: {0:dd/MM/yyyy HH:mm}'}" />
+                    <Label Text="{Binding Aula.Descricao}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Lista de alunos -->
+            <Label Text="Alunos desta Aula"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+
+            <CollectionView ItemsSource="{Binding Alunos}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="LightGray" Padding="10" Margin="5">
+                            <StackLayout>
+                                <Label Text="{Binding Nome}" FontSize="16" />
+                                <Label Text="{Binding Email}" FontSize="14" TextColor="Gray" />
+
+                                <Button Text="Ver Detalhes"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelecionarAlunoCommand}"
+                                        CommandParameter="{Binding}" />
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -21,12 +21,32 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame BorderColor="LightGray" Padding="8" Margin="4">
-                                    <StackLayout Orientation="Horizontal" Spacing="10">
-                                        <Label Text="{Binding Nome}" VerticalOptions="Center" FontSize="16" />
+                                    <Grid ColumnDefinitions="*,Auto,Auto" VerticalOptions="Center">
+
+                                        <!-- Nome da matéria à esquerda -->
+                                        <Label Text="{Binding Nome}"
+                                               FontSize="16"
+                                               VerticalOptions="Center"
+                                               Grid.Column="0"/>
+
+                                        <!-- Duração da matéria (Stepper + Entry) à direita -->
+                                        <HorizontalStackLayout Spacing="5" VerticalOptions="Center" Grid.Column="1">
+                                            <Stepper Minimum="10"
+                                                     Maximum="240"
+                                                     Increment="5"
+                                                     Value="{Binding Duracao}"
+                                                     ValueChanged="StepperDuracao_ValueChanged"/>
+                                            <Entry Text="{Binding Duracao, Mode=TwoWay}"
+                                                   Keyboard="Numeric"
+                                                   WidthRequest="50"/>
+                                        </HorizontalStackLayout>
+
+                                        <!-- Botão Excluir -->
                                         <Button Text="Excluir"
                                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirMateriaCommand}"
-                                                CommandParameter="{Binding}" />
-                                    </StackLayout>
+                                                CommandParameter="{Binding}"
+                                                Grid.Column="2"/>
+                                    </Grid>
                                 </Frame>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -39,14 +59,19 @@
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Preferências Gerais" FontSize="20" FontAttributes="Bold" />
 
-                    <!-- Exemplo: duração padrão das aulas -->
+                    <!-- Duração padrão das aulas -->
                     <HorizontalStackLayout>
                         <Label Text="Duração padrão (min)" VerticalOptions="Center"/>
-                        <Entry Text="{Binding DuracaoPadrao}" 
-                               Keyboard="Numeric" WidthRequest="80"/>
+                        <Entry Text="{Binding DuracaoPadrao}" Keyboard="Numeric" WidthRequest="80"/>
                     </HorizontalStackLayout>
 
-                    <!-- Exemplo: alternar tema -->
+                    <!-- Quantidade de aulas -->
+                    <HorizontalStackLayout>
+                        <Label Text="Quantidade de aulas" VerticalOptions="Center"/>
+                        <Entry Text="{Binding QuantidadeAulasPadrao}" Keyboard="Numeric" WidthRequest="80"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Alternar tema -->
                     <HorizontalStackLayout>
                         <Label Text="Tema escuro" VerticalOptions="Center"/>
                         <Switch IsToggled="{Binding TemaEscuro}" />

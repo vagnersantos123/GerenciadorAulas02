@@ -11,22 +11,57 @@ public class AulaDatabase
     {
         _database = new SQLiteAsyncConnection(dbPath);
 
-        // 🔹 Criação das tabelas
+        // 🔹 Criação das tabelas no banco
         _database.CreateTableAsync<Aula>().Wait();
         _database.CreateTableAsync<Aluno>().Wait();
         _database.CreateTableAsync<AulaAluno>().Wait();
-        _database.CreateTableAsync<SalaDeAula>().Wait(); // agora temos salas
+        _database.CreateTableAsync<SalaDeAula>().Wait();
         _database.CreateTableAsync<Materia>().Wait();
-
-
     }
 
-    // ====================================================
-    // CRUD AULAS
-    // ====================================================
+    // ====================
+    // CRUD AULA
+    // ====================
+    #region CRUD AULA
     public Task<List<Aula>> GetAulasAsync()
     {
         return _database.Table<Aula>().ToListAsync();
+    }
+
+    public Task<List<Aula>> GetAulasBySalaAsync(int salaId)
+    {
+        return _database.Table<Aula>()
+                        .Where(a => a.SalaDeAulaId == salaId)
+                        .ToListAsync();
+    }
+
+    public async Task<List<Aula>> GetAulasComMateriasAsync()
+    {
+        var aulas = await _database.Table<Aula>().ToListAsync();
+        var materias = await _database.Table<Materia>().ToListAsync();
+
+        foreach (var aula in aulas)
+        {
+            aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
+        }
+
+        return aulas;
+    }
+
+    public async Task<List<Aula>> GetAulasBySalaComMateriasAsync(int salaId)
+    {
+        var aulas = await _database.Table<Aula>()
+                                   .Where(a => a.SalaDeAulaId == salaId)
+                                   .ToListAsync();
+
+        var materias = await _database.Table<Materia>().ToListAsync();
+
+        foreach (var aula in aulas)
+        {
+            aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
+        }
+
+        return aulas;
     }
 
     public Task<int> SaveAulaAsync(Aula aula)
@@ -41,26 +76,12 @@ public class AulaDatabase
     {
         return _database.DeleteAsync(aula);
     }
+    #endregion
 
-    // 🔹 Buscar aulas por sala
-    public async Task<List<Aula>> GetAulasComMateriasAsync()
-    {
-        var aulas = await _database.Table<Aula>().ToListAsync();
-        var materias = await _database.Table<Materia>().ToListAsync();
-
-        // 🔹 junta a Aula com a Materia correspondente
-        foreach (var aula in aulas)
-        {
-            aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
-        }
-
-        return aulas;
-    }
-
-
-    // ====================================================
-    // CRUD ALUNOS (GLOBAL)
-    // ====================================================
+    // ====================
+    // CRUD ALUNO (GLOBAL)
+    // ====================
+    #region CRUD ALUNO (GLOBAL)
     public Task<List<Aluno>> GetTodosAlunosAsync()
     {
         return _database.Table<Aluno>().ToListAsync();
@@ -78,10 +99,11 @@ public class AulaDatabase
     {
         return _database.DeleteAsync(aluno);
     }
+    #endregion
 
-    // ====================================================
+    // ====================
     // RELAÇÃO AULA x ALUNO (N:N)
-    // ====================================================
+    // ====================
     #region RELAÇÃO AULA x ALUNO (N:N)
     public Task<int> AddAlunoToAulaAsync(int aulaId, int alunoId)
     {
@@ -92,8 +114,8 @@ public class AulaDatabase
     public Task<int> RemoveAlunoFromAulaAsync(int aulaId, int alunoId)
     {
         return _database.Table<AulaAluno>()
-            .Where(x => x.AulaId == aulaId && x.AlunoId == alunoId)
-            .DeleteAsync();
+                        .Where(x => x.AulaId == aulaId && x.AlunoId == alunoId)
+                        .DeleteAsync();
     }
 
     public async Task<List<Aluno>> GetAlunosByAulaAsync(int aulaId)
@@ -110,7 +132,10 @@ public class AulaDatabase
     }
     #endregion
 
-    #region Crud Salas
+    // ====================
+    // CRUD SALA
+    // ====================
+    #region CRUD SALA
     public Task<List<SalaDeAula>> GetSalasAsync()
     {
         return _database.Table<SalaDeAula>().ToListAsync();
@@ -130,38 +155,42 @@ public class AulaDatabase
     }
     #endregion
 
-    
-    #region Materias
-    public Task<List<Materia>> GetMateriasAsync()
+    // ====================
+    // CRUD MATERIA
+    // ====================
+    #region CRUD MATERIA
+    public async Task<List<Materia>> GetMateriasAsync()
     {
-        return _database.Table<Materia>().ToListAsync();
+        var materias = await _database.Table<Materia>().ToListAsync();
+
+        foreach (var m in materias)
+        {
+            if (m.Duracao <= 0)
+                m.Duracao = PreferenciasGlobais.DuracaoPadrao;
+        }
+
+        return materias;
     }
+
 
     public Task<int> SaveMateriaAsync(Materia materia)
     {
+        // ✅ Se não foi definido, usa o valor padrão das Preferências
+        if (materia.Duracao <= 0)
+        {
+            materia.Duracao = PreferenciasGlobais.DuracaoPadrao;
+        }
+
         if (materia.Id != 0)
             return _database.UpdateAsync(materia);
         else
             return _database.InsertAsync(materia);
     }
 
+
     public Task<int> DeleteMateriaAsync(Materia materia)
     {
         return _database.DeleteAsync(materia);
     }
     #endregion
-    public async Task<List<Aula>> GetAulasBySalaComMateriasAsync(int salaId)
-    {
-        var aulas = await _database.Table<Aula>().Where(a => a.SalaDeAulaId == salaId).ToListAsync();
-        var materias = await _database.Table<Materia>().ToListAsync();
-
-        foreach (var aula in aulas)
-        {
-            aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
-        }
-
-        return aulas;
-    }
-
-
 }

@@ -1,49 +1,92 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using GerenciadorAulas02.Models;
+using GerenciadorAulas02.Services;
 
 namespace GerenciadorAulas02.ViewModels;
 
-public class AulasViewModel : INotifyPropertyChanged
+public class AulasViewModel : BaseViewModel
 {
     public ObservableCollection<Aula> Aulas { get; } = new();
     public ObservableCollection<Materia> Materias { get; } = new();
 
-    // Commands
-    public ICommand AdicionarAulaCommand { get; }
-    public ICommand ExcluirAulaCommand { get; }
-    public ICommand EditarAulaCommand { get; }
-    public ICommand GerenciarAlunosCommand { get; }
 
-    private SalaDeAula? sala;
+    private readonly SalaDeAula? sala;
 
-    // Materia selecionada para o Picker
+    // ========================
+    // Propriedades do Formulário
+    // ========================
+
     private Materia? materiaSelecionada;
     public Materia? MateriaSelecionada
     {
         get => materiaSelecionada;
         set
         {
-            if (materiaSelecionada != value)
+            if (SetProperty(ref materiaSelecionada, value) && value != null)
             {
-                materiaSelecionada = value;
-                OnPropertyChanged();
+                // Atualiza DuracaoMinutos imediatamente ao selecionar a matéria
+                DuracaoMinutos = value.Duracao > 0
+                    ? value.Duracao
+                    : PreferenciasGlobais.DuracaoPadrao;
+
+                // Notifica a view para atualizar o Entry/Stepper
+                OnPropertyChanged(nameof(DuracaoMinutos));
             }
         }
     }
 
+
+    private int quantidadeAulas;
+    public int QuantidadeAulas
+    {
+        get => quantidadeAulas;
+        set => SetProperty(ref quantidadeAulas, value);
+    }
+
+    private DateTime dataInicial = DateTime.Today;
+    public DateTime DataInicial
+    {
+        get => dataInicial;
+        set => SetProperty(ref dataInicial, value);
+    }
+
+    private int intervaloDias = 1;
+    public int IntervaloDias
+    {
+        get => intervaloDias;
+        set => SetProperty(ref intervaloDias, value);
+    }
+
+    private int duracaoMinutos = 50;
+    public int DuracaoMinutos
+    {
+        get => duracaoMinutos;
+        set => SetProperty(ref duracaoMinutos, value);
+    }
+
+    // ========================
+    // Comandos
+    // ========================
+    public ICommand AdicionarAulaCommand { get; }
+    public ICommand ExcluirAulaCommand { get; }
+    public ICommand EditarAulaCommand { get; }
+    public ICommand GerenciarAlunosCommand { get; }
+    public ICommand GerarAulasCommand { get; }
+
+    // ========================
+    // Construtores
+    // ========================
     public AulasViewModel()
     {
         AdicionarAulaCommand = new Command(async () => await AdicionarAula());
         ExcluirAulaCommand = new Command<Aula>(async (a) => await ExcluirAula(a));
         EditarAulaCommand = new Command<Aula>(async (a) => await EditarAula(a));
         GerenciarAlunosCommand = new Command<Aula>(async (a) => await GerenciarAlunos(a));
+        GerarAulasCommand = new Command(async () => await GerarAulasParaMateria());
 
         _ = LoadAulas();
         _ = LoadMaterias();
@@ -55,19 +98,14 @@ public class AulasViewModel : INotifyPropertyChanged
         _ = LoadAulasForSala();
     }
 
-    #region Carregamento
+    // ========================
+    // Métodos de Carregamento
+    // ========================
     private async Task LoadAulas()
     {
-        try
-        {
-            var aulas = await App.Database.GetAulasComMateriasAsync();
-            Aulas.Clear();
-            foreach (var a in aulas) Aulas.Add(a);
-        }
-        catch (Exception ex)
-        {
-            await Application.Current.MainPage.DisplayAlert("Erro", $"Erro ao carregar aulas: {ex.Message}", "OK");
-        }
+        var aulas = await App.Database.GetAulasComMateriasAsync();
+        Aulas.Clear();
+        foreach (var a in aulas) Aulas.Add(a);
     }
 
     private async Task LoadAulasForSala()
@@ -78,73 +116,41 @@ public class AulasViewModel : INotifyPropertyChanged
             return;
         }
 
-        try
-        {
-            var aulas = await App.Database.GetAulasBySalaComMateriasAsync(sala.Id);
-            Aulas.Clear();
-            foreach (var a in aulas) Aulas.Add(a);
-        }
-        catch (Exception ex)
-        {
-            await Application.Current.MainPage.DisplayAlert("Erro", $"Erro ao carregar aulas da sala: {ex.Message}", "OK");
-        }
+        var aulas = await App.Database.GetAulasBySalaComMateriasAsync(sala.Id);
+        Aulas.Clear();
+        foreach (var a in aulas) Aulas.Add(a);
     }
 
     private async Task LoadMaterias()
     {
-        try
-        {
-            var materias = await App.Database.GetMateriasAsync();
-            Materias.Clear();
-            foreach (var m in materias) Materias.Add(m);
-
-            if (Materias.Count > 0 && MateriaSelecionada == null)
-                MateriaSelecionada = Materias.First();
-        }
-        catch (Exception ex)
-        {
-            await Application.Current.MainPage.DisplayAlert("Erro", $"Erro ao carregar matérias: {ex.Message}", "OK");
-        }
+        var materias = await App.Database.GetMateriasAsync();
+        Materias.Clear();
+        foreach (var m in materias) Materias.Add(m);
     }
-    #endregion
 
-    #region CRUD
+    // ========================
+    // Métodos CRUD
+    // ========================
     private async Task AdicionarAula()
     {
         if (MateriaSelecionada == null)
         {
-            await Application.Current.MainPage.DisplayAlert("Aviso", "Selecione uma matéria antes de adicionar a aula.", "OK");
+            await Application.Current.MainPage.DisplayAlert("Erro", "Selecione uma matéria", "OK");
             return;
         }
 
-        string tipo = await Application.Current.MainPage.DisplayPromptAsync("Nova Aula", "Tipo (Teórica/Prática):", initialValue: "Teórica");
-
-        // duração padrão vem de PreferenciasGlobais
-        int duracaoPadrao = Services.PreferenciasGlobais.DuracaoPadrao;
-
-        string duracaoStr = await Application.Current.MainPage.DisplayPromptAsync(
-            "Nova Aula",
-            "Duração em minutos:",
-            initialValue: duracaoPadrao.ToString()
-        );
-
-        if (!double.TryParse(duracaoStr, out double minutos))
-            minutos = duracaoPadrao;
-
         var aula = new Aula
         {
-            Titulo = MateriaSelecionada.Nome,
-            MateriaId = MateriaSelecionada.Id,
-            Materia = MateriaSelecionada,
-            Descricao = "Descrição da aula",
+            Titulo = $"{MateriaSelecionada.Nome} - Aula Avulsa",
+            Descricao = $"Aula de {MateriaSelecionada.Nome}",
             Data = DateTime.Now,
-            Tipo = tipo ?? "Teórica",
-            Duracao = TimeSpan.FromMinutes(minutos),
-            SalaDeAulaId = sala?.Id
+            Tipo = "Teórica",
+            Duracao = TimeSpan.FromMinutes(DuracaoMinutos),
+            SalaDeAulaId = sala?.Id,
+            MateriaId = MateriaSelecionada.Id
         };
 
         await App.Database.SaveAulaAsync(aula);
-
         if (sala != null) await LoadAulasForSala(); else await LoadAulas();
     }
 
@@ -153,7 +159,6 @@ public class AulasViewModel : INotifyPropertyChanged
         if (aula == null) return;
 
         await App.Database.DeleteAulaAsync(aula);
-
         if (sala != null) await LoadAulasForSala(); else await LoadAulas();
     }
 
@@ -177,11 +182,49 @@ public class AulasViewModel : INotifyPropertyChanged
 
         await Application.Current.MainPage.Navigation.PushAsync(new Views.GerenciarAlunosDaAulaPage(aula));
     }
-    #endregion
 
-    #region INotifyPropertyChanged
-    public event PropertyChangedEventHandler? PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    #endregion
+    // ========================
+    // Gerar Aulas em Lote
+    // ========================
+    private async Task GerarAulasParaMateria()
+    {
+        if (MateriaSelecionada == null)
+        {
+            await Application.Current.MainPage.DisplayAlert("Erro", "Selecione uma matéria", "OK");
+            return;
+        }
+
+        if (QuantidadeAulas <= 0)
+        {
+            await Application.Current.MainPage.DisplayAlert("Erro", "Informe a quantidade de aulas", "OK");
+            return;
+        }
+
+        for (int i = 0; i < QuantidadeAulas; i++)
+        {
+            var aula = new Aula
+            {
+                Titulo = $"{MateriaSelecionada.Nome} - Aula {i + 1}",
+                Descricao = $"Aula de {MateriaSelecionada.Nome}",
+                Data = DataInicial.AddDays(i * IntervaloDias),
+                Tipo = "Teórica",
+                Duracao = TimeSpan.FromMinutes(DuracaoMinutos),
+                SalaDeAulaId = sala?.Id,
+                MateriaId = MateriaSelecionada.Id
+            };
+
+            await App.Database.SaveAulaAsync(aula);
+        }
+
+        // Atualiza lista
+        if (sala != null) await LoadAulasForSala(); else await LoadAulas();
+
+        // Limpa os campos do formulário
+        QuantidadeAulas = 0;
+        IntervaloDias = 1;
+        DuracaoMinutos = 50;
+        OnPropertyChanged(nameof(QuantidadeAulas));
+        OnPropertyChanged(nameof(IntervaloDias));
+        OnPropertyChanged(nameof(DuracaoMinutos));
+    }
 }
