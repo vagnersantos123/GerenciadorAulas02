@@ -8,8 +8,6 @@
         <Button Text="Gerenciar Salas"
             Clicked="OnGerenciarSalasClicked" />
 
-        <Button Text="Gerenciar Aulas"
-            Clicked="OnGerenciarAulasClicked" />
 
         <Button Text="Configurações"
             Clicked="OnConfiguracoesClicked" />

@@ -27,5 +27,10 @@ public partial class App : Application
 
         // Página inicial
         MainPage = new NavigationPage(new Views.LoginPage());
+
+        if (Preferences.Get("ManterConectado", false))
+            MainPage = new NavigationPage(new Views.HomePage());
+        else
+            MainPage = new NavigationPage(new Views.LoginPage());
     }
 }

@@ -20,6 +20,12 @@
                IsPassword="True" 
                Text="{Binding Senha}" />
 
+        <!-- CheckBox "Manter Conectado" -->
+        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+            <CheckBox IsChecked="{Binding ManterConectado}" />
+            <Label Text="Manter Conectado" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+
         <Button Text="Entrar" 
                 Command="{Binding EntrarCommand}" />
     </VerticalStackLayout>
