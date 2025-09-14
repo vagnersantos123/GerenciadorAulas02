@@ -9,13 +9,25 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
 
-            <!-- Formulário simples para adicionar uma sala -->
+            <!-- Formulário para adicionar uma sala com datas -->
             <Frame BorderColor="Gray" Padding="10">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Adicionar Sala" FontAttributes="Bold" FontSize="18" />
 
                     <Entry Placeholder="Nome da Sala"
                            Text="{Binding NomeSala}" />
+
+                    <!-- Data de início do ano letivo -->
+                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                        <Label Text="Início do ano:" VerticalOptions="Center"/>
+                        <DatePicker Date="{Binding DataInicioAno}" />
+                    </HorizontalStackLayout>
+
+                    <!-- Data de término do ano letivo -->
+                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                        <Label Text="Fim do ano:" VerticalOptions="Center"/>
+                        <DatePicker Date="{Binding DataFimAno}" />
+                    </HorizontalStackLayout>
 
                     <Button Text="Adicionar Sala"
                             Command="{Binding AdicionarSalaCommand}" />
@@ -36,6 +48,13 @@
                                 <Label Text="{Binding Nome}"
                                        FontSize="16"
                                        FontAttributes="Bold" />
+
+                                <!-- Mostrar datas do ano letivo -->
+                                <Label Text="Início do Ano Letivo" />
+                                <DatePicker Date="{Binding DataInicioAno}" />
+
+                                <Label Text="Fim do Ano Letivo" />
+                                <DatePicker Date="{Binding DataFimAno}" />
 
                                 <HorizontalStackLayout Spacing="10">
                                     <Button Text="Ver Aulas"

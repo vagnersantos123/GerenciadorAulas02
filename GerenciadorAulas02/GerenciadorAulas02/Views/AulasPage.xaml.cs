@@ -1,6 +1,8 @@
 using Microsoft.Maui.Controls;
 using GerenciadorAulas02.Models;
 using GerenciadorAulas02.ViewModels;
+using GerenciadorAulas02.Services;
+
 
 namespace GerenciadorAulas02.Views;
 

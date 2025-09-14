@@ -4,90 +4,94 @@
              xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
              x:Class="GerenciadorAulas02.Views.AulasPage"
              x:Name="ThisPage"
-             Title="Minhas Aulas">
+             Title="Aulas">
+
+    <!-- BindingContext -->
+    <ContentPage.BindingContext>
+        <viewmodels:AulasViewModel />
+    </ContentPage.BindingContext>
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="15">
+        <VerticalStackLayout Padding="20" Spacing="25">
 
-            <!-- =========================
-                 Formulário de Geração
-                 ========================= -->
-            <Frame BorderColor="Gray" Padding="10">
-                <VerticalStackLayout Spacing="8">
+            <!-- ================= FORMULÁRIO DE GERAÇÃO ================= -->
+            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Gerar Aulas" FontSize="20" FontAttributes="Bold" />
 
-                    <Label Text="Gerar Aulas para Matéria"
-                           FontAttributes="Bold"
-                           FontSize="18" />
-
-                    <!-- Seleção da matéria -->
-                    <Picker Title="Selecione a Matéria"
+                    <!-- Seleção da Matéria -->
+                    <Picker Title="Selecione a matéria"
                             ItemsSource="{Binding Materias}"
                             ItemDisplayBinding="{Binding Nome}"
                             SelectedItem="{Binding MateriaSelecionada}" />
 
-                    <!-- Quantidade -->
-                    <Entry Placeholder="Quantidade de aulas"
-                           Keyboard="Numeric"
-                           Text="{Binding QuantidadeAulas}" />
+                    <!-- Quantidade de aulas -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Quantidade de aulas:" VerticalOptions="Center"/>
+                        <Entry Text="{Binding QuantidadeAulas, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
+                    </HorizontalStackLayout>
 
-                    <!-- Data inicial -->
-                    <DatePicker Date="{Binding DataInicial}" />
-
-                    <!-- Intervalo -->
-                    <Entry Placeholder="Intervalo em dias"
-                           Keyboard="Numeric"
-                           Text="{Binding IntervaloDias}" />
+                    <!-- Intervalo de dias -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Intervalo entre aulas (dias):" VerticalOptions="Center"/>
+                        <Entry Text="{Binding IntervaloDias, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
+                    </HorizontalStackLayout>
 
                     <!-- Duração -->
-                    <Entry Placeholder="Duração (minutos)"
-                           Keyboard="Numeric"
-                           Text="{Binding DuracaoMinutos}" />
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Duração (minutos):" VerticalOptions="Center"/>
+                        <Entry Text="{Binding DuracaoMinutos, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Data inicial -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Data inicial:" VerticalOptions="Center"/>
+                        <DatePicker Date="{Binding DataInicial, Mode=TwoWay}" />
+                    </HorizontalStackLayout>
 
                     <!-- Botão gerar -->
                     <Button Text="Gerar Aulas"
                             Command="{Binding GerarAulasCommand}" />
-
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- =========================
-                 Lista de Aulas
-                 ========================= -->
-            <Label Text="Aulas cadastradas"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   Margin="0,10,0,5" />
+            <!-- ================= LISTA DE AULAS ================= -->
+            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Aulas Cadastradas" FontSize="20" FontAttributes="Bold" />
 
-            <CollectionView ItemsSource="{Binding Aulas}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame BorderColor="Gray" Padding="10" Margin="5">
-                            <StackLayout>
-                                <Label Text="{Binding Resumo}"
-                                       FontSize="16"
-                                       FontAttributes="Bold" />
-                                <Label Text="{Binding Descricao}"
-                                       FontSize="14"
-                                       TextColor="Gray" />
+                    <CollectionView ItemsSource="{Binding Aulas}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame BorderColor="LightGray" Padding="10" Margin="4">
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" VerticalOptions="Center">
+                                        <!-- Título da aula -->
+                                        <Label Text="{Binding Titulo}" Grid.Column="0" VerticalOptions="Center" />
 
-                                <HorizontalStackLayout Spacing="10">
-                                    <Button Text="Editar"
-                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditarAulaCommand}"
-                                            CommandParameter="{Binding}" />
+                                        <!-- Editar -->
+                                        <Button Text="Editar"
+                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditarAulaCommand}"
+                                                CommandParameter="{Binding}"
+                                                Grid.Column="1" />
 
-                                    <Button Text="Excluir"
-                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirAulaCommand}"
-                                            CommandParameter="{Binding}" />
+                                        <!-- Gerenciar Alunos -->
+                                        <Button Text="Alunos"
+                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.GerenciarAlunosCommand}"
+                                                CommandParameter="{Binding}"
+                                                Grid.Column="2" />
 
-                                    <Button Text="Gerenciar Alunos"
-                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.GerenciarAlunosCommand}"
-                                            CommandParameter="{Binding}" />
-                                </HorizontalStackLayout>
-                            </StackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                                        <!-- Excluir -->
+                                        <Button Text="Excluir"
+                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirAulaCommand}"
+                                                CommandParameter="{Binding}"
+                                                Grid.Column="3" />
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
 
         </VerticalStackLayout>
     </ScrollView>

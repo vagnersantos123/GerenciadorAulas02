@@ -1,15 +1,45 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
              x:Class="GerenciadorAulas02.Views.ConfiguracoesPage"
-             x:Name="ThisPage"
              Title="Configurações">
+
+    
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="25">
+            <!-- Preferências Gerais -->
+            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Preferências Gerais" FontSize="20" FontAttributes="Bold" />
 
-            <!-- ================= MATÉRIAS ================= -->
+                    <HorizontalStackLayout>
+                        <Label Text="Duração padrão (min)" VerticalOptions="Center"/>
+                        <Entry Text="{Binding DuracaoPadrao, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout>
+                        <Label Text="Quantidade de aulas" VerticalOptions="Center"/>
+                        <Entry Text="{Binding QuantidadeAulasPadrao, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout>
+                        <Label Text="Início do Ano" VerticalOptions="Center"/>
+                        <DatePicker Date="{Binding DataInicioAno, Mode=TwoWay}" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout>
+                        <Label Text="Fim do Ano" VerticalOptions="Center"/>
+                        <DatePicker Date="{Binding DataFimAno, Mode=TwoWay}" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout>
+                        <Label Text="Tema escuro" VerticalOptions="Center"/>
+                        <Switch IsToggled="{Binding TemaEscuro, Mode=TwoWay}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Matérias -->
             <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Matérias" FontSize="20" FontAttributes="Bold" />
@@ -22,26 +52,11 @@
                             <DataTemplate>
                                 <Frame BorderColor="LightGray" Padding="8" Margin="4">
                                     <Grid ColumnDefinitions="*,Auto,Auto" VerticalOptions="Center">
-
-                                        <!-- Nome da matéria à esquerda -->
-                                        <Label Text="{Binding Nome}"
-                                               FontSize="16"
-                                               VerticalOptions="Center"
-                                               Grid.Column="0"/>
-
-                                        <!-- Duração da matéria (Stepper + Entry) à direita -->
+                                        <Label Text="{Binding Nome}" FontSize="16" VerticalOptions="Center" Grid.Column="0"/>
                                         <HorizontalStackLayout Spacing="5" VerticalOptions="Center" Grid.Column="1">
-                                            <Stepper Minimum="10"
-                                                     Maximum="240"
-                                                     Increment="5"
-                                                     Value="{Binding Duracao}"
-                                                     ValueChanged="StepperDuracao_ValueChanged"/>
-                                            <Entry Text="{Binding Duracao, Mode=TwoWay}"
-                                                   Keyboard="Numeric"
-                                                   WidthRequest="50"/>
+                                            <Stepper Minimum="10" Maximum="240" Increment="5" Value="{Binding Duracao}" />
+                                            <Entry Text="{Binding Duracao, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="50"/>
                                         </HorizontalStackLayout>
-
-                                        <!-- Botão Excluir -->
                                         <Button Text="Excluir"
                                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirMateriaCommand}"
                                                 CommandParameter="{Binding}"
@@ -53,32 +68,6 @@
                     </CollectionView>
                 </VerticalStackLayout>
             </Frame>
-
-            <!-- ================= FUTURAS CONFIGURAÇÕES ================= -->
-            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Preferências Gerais" FontSize="20" FontAttributes="Bold" />
-
-                    <!-- Duração padrão das aulas -->
-                    <HorizontalStackLayout>
-                        <Label Text="Duração padrão (min)" VerticalOptions="Center"/>
-                        <Entry Text="{Binding DuracaoPadrao}" Keyboard="Numeric" WidthRequest="80"/>
-                    </HorizontalStackLayout>
-
-                    <!-- Quantidade de aulas -->
-                    <HorizontalStackLayout>
-                        <Label Text="Quantidade de aulas" VerticalOptions="Center"/>
-                        <Entry Text="{Binding QuantidadeAulasPadrao}" Keyboard="Numeric" WidthRequest="80"/>
-                    </HorizontalStackLayout>
-
-                    <!-- Alternar tema -->
-                    <HorizontalStackLayout>
-                        <Label Text="Tema escuro" VerticalOptions="Center"/>
-                        <Switch IsToggled="{Binding TemaEscuro}" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
-
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

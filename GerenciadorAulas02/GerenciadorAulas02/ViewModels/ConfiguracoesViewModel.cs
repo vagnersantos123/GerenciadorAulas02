@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using GerenciadorAulas02.Models;
@@ -8,24 +10,58 @@ namespace GerenciadorAulas02.ViewModels;
 
 public class ConfiguracoesViewModel : BaseViewModel
 {
+    // ================= MATÉRIAS =================
     public ObservableCollection<Materia> Materias { get; } = new();
 
     public ICommand AdicionarMateriaCommand { get; }
     public ICommand ExcluirMateriaCommand { get; }
 
-    // ================= FUTURAS CONFIGURAÇÕES =================
-    private int duracaoPadrao = PreferenciasGlobais.DuracaoPadrao;
+    // ================= PREFERÊNCIAS =================
+    private int duracaoPadrao;
     public int DuracaoPadrao
     {
         get => duracaoPadrao;
         set
         {
             if (SetProperty(ref duracaoPadrao, value))
-                PreferenciasGlobais.DuracaoPadrao = value; // 🔹 salva nas preferências
+                PreferenciasGlobais.DuracaoPadrao = value;
         }
     }
 
-    private bool temaEscuro = PreferenciasGlobais.TemaEscuro;
+    private int quantidadeAulasPadrao;
+    public int QuantidadeAulasPadrao
+    {
+        get => quantidadeAulasPadrao;
+        set
+        {
+            if (SetProperty(ref quantidadeAulasPadrao, value))
+                PreferenciasGlobais.QuantidadeAulasPadrao = value;
+        }
+    }
+
+    private DateTime dataInicioAno;
+    public DateTime DataInicioAno
+    {
+        get => dataInicioAno;
+        set
+        {
+            if (SetProperty(ref dataInicioAno, value))
+                PreferenciasGlobais.DataInicioAno = value;
+        }
+    }
+
+    private DateTime dataFimAno;
+    public DateTime DataFimAno
+    {
+        get => dataFimAno;
+        set
+        {
+            if (SetProperty(ref dataFimAno, value))
+                PreferenciasGlobais.DataFimAno = value;
+        }
+    }
+
+    private bool temaEscuro;
     public bool TemaEscuro
     {
         get => temaEscuro;
@@ -34,22 +70,30 @@ public class ConfiguracoesViewModel : BaseViewModel
             if (SetProperty(ref temaEscuro, value))
             {
                 PreferenciasGlobais.TemaEscuro = value;
-
-                // 🔹 aplica o tema em tempo real
                 Application.Current.UserAppTheme = value ? AppTheme.Dark : AppTheme.Light;
             }
         }
     }
 
-
+    // ================= CONSTRUTOR =================
     public ConfiguracoesViewModel()
     {
+        // Inicializa com valores do PreferenciasGlobais
+        duracaoPadrao = PreferenciasGlobais.DuracaoPadrao;
+        quantidadeAulasPadrao = PreferenciasGlobais.QuantidadeAulasPadrao;
+        dataInicioAno = PreferenciasGlobais.DataInicioAno;
+        dataFimAno = PreferenciasGlobais.DataFimAno;
+        temaEscuro = PreferenciasGlobais.TemaEscuro;
+
+        // Comandos de matérias
         AdicionarMateriaCommand = new Command(async () => await AdicionarMateria());
         ExcluirMateriaCommand = new Command<Materia>(async (m) => await ExcluirMateria(m));
 
+        // Carrega matérias
         _ = LoadMaterias();
     }
 
+    // ================= MÉTODOS =================
     private async Task LoadMaterias()
     {
         var materias = await App.Database.GetMateriasAsync();

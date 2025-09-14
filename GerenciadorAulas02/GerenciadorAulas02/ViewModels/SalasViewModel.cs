@@ -18,6 +18,22 @@ public class SalasViewModel : BaseViewModel
         set => SetProperty(ref nomeSala, value);
     }
 
+    // ===================== NOVO =====================
+    private DateTime dataInicioAno = DateTime.Today;
+    public DateTime DataInicioAno
+    {
+        get => dataInicioAno;
+        set => SetProperty(ref dataInicioAno, value);
+    }
+
+    private DateTime dataFimAno = DateTime.Today.AddMonths(10);
+    public DateTime DataFimAno
+    {
+        get => dataFimAno;
+        set => SetProperty(ref dataFimAno, value);
+    }
+    // ================================================
+
     public ICommand AdicionarSalaCommand { get; }
     public ICommand ExcluirSalaCommand { get; }
 
@@ -46,13 +62,19 @@ public class SalasViewModel : BaseViewModel
 
         var novaSala = new SalaDeAula
         {
-            Nome = NomeSala
+            Nome = NomeSala,
+            DataInicioAnoLetivo = DataInicioAno,
+            DataFimAnoLetivo = DataFimAno
         };
 
         await App.Database.SaveSalaAsync(novaSala);
 
         NomeSala = string.Empty;
         OnPropertyChanged(nameof(NomeSala));
+
+        // Reset das datas se quiser, ou manter
+        DataInicioAno = DateTime.Today;
+        DataFimAno = DateTime.Today.AddMonths(10);
 
         await LoadSalas();
     }
