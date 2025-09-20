@@ -42,27 +42,55 @@ public class AulaDatabase
 
         foreach (var aula in aulas)
         {
+            // Vincula a matéria
             aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
+
+            // Se a aula não tem duração, define pela matéria ou preferências
+            if (aula.Duracao == default && aula.Materia != null)
+            {
+                aula.Duracao = TimeSpan.FromMinutes(aula.Materia.Duracao > 0
+                    ? aula.Materia.Duracao
+                    : PreferenciasGlobais.DuracaoPadrao);
+            }
+
+            // Se Fim não estiver definido, calcula a partir do Inicio + Duracao
+            if (aula.Fim == default && aula.Inicio != default)
+            {
+                aula.Fim = aula.Inicio.Add(aula.Duracao);
+            }
         }
 
         return aulas;
     }
+
 
     public async Task<List<Aula>> GetAulasBySalaComMateriasAsync(int salaId)
     {
         var aulas = await _database.Table<Aula>()
                                    .Where(a => a.SalaDeAulaId == salaId)
                                    .ToListAsync();
-
         var materias = await _database.Table<Materia>().ToListAsync();
 
         foreach (var aula in aulas)
         {
             aula.Materia = materias.FirstOrDefault(m => m.Id == aula.MateriaId);
+
+            if (aula.Duracao == default && aula.Materia != null)
+            {
+                aula.Duracao = TimeSpan.FromMinutes(aula.Materia.Duracao > 0
+                    ? aula.Materia.Duracao
+                    : PreferenciasGlobais.DuracaoPadrao);
+            }
+
+            if (aula.Fim == default && aula.Inicio != default)
+            {
+                aula.Fim = aula.Inicio.Add(aula.Duracao);
+            }
         }
 
         return aulas;
     }
+
 
     public Task<int> SaveAulaAsync(Aula aula)
     {

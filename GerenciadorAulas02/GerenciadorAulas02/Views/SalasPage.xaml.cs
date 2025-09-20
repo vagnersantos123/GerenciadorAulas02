@@ -19,5 +19,16 @@ public partial class SalasPage : ContentPage
             await Navigation.PushAsync(new AulasPage(sala));
         }
     }
+
+    // ?? Sempre que a tela aparecer, recarrega valores das preferências
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is SalasViewModel vm)
+        {
+            vm.DataInicioAno = Services.PreferenciasGlobais.DataInicioAno;
+            vm.DataFimAno = Services.PreferenciasGlobais.DataFimAno;
+        }
+    }
 }
-    

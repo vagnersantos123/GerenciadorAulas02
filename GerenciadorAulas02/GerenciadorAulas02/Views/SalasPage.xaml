@@ -1,76 +1,68 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
              x:Class="GerenciadorAulas02.Views.SalasPage"
-             x:Name="ThisPage"
              Title="Salas de Aula">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="15">
+    <ContentPage.BindingContext>
+        <viewmodels:SalasViewModel />
+    </ContentPage.BindingContext>
 
-            <!-- Formulário para adicionar uma sala com datas -->
-            <Frame BorderColor="Gray" Padding="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Adicionar Sala" FontAttributes="Bold" FontSize="18" />
+    <!-- Grid principal -->
+    <Grid Padding="20" RowSpacing="15"
+          RowDefinitions="Auto,Auto,Auto,*">
 
-                    <Entry Placeholder="Nome da Sala"
-                           Text="{Binding NomeSala}" />
+        <!-- Campos de Data -->
+        <VerticalStackLayout Grid.Row="0" Spacing="5">
+            <Label Text="Data de Início do Ano:" />
+            <DatePicker Date="{Binding DataInicioAno}" />
 
-                    <!-- Data de início do ano letivo -->
-                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                        <Label Text="Início do ano:" VerticalOptions="Center"/>
-                        <DatePicker Date="{Binding DataInicioAno}" />
-                    </HorizontalStackLayout>
-
-                    <!-- Data de término do ano letivo -->
-                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                        <Label Text="Fim do ano:" VerticalOptions="Center"/>
-                        <DatePicker Date="{Binding DataFimAno}" />
-                    </HorizontalStackLayout>
-
-                    <Button Text="Adicionar Sala"
-                            Command="{Binding AdicionarSalaCommand}" />
-                </VerticalStackLayout>
-            </Frame>
-
-            <!-- Lista de Salas -->
-            <Label Text="Salas cadastradas"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   Margin="0,10,0,5" />
-
-            <CollectionView ItemsSource="{Binding Salas}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame BorderColor="Gray" Padding="10" Margin="5">
-                            <StackLayout>
-                                <Label Text="{Binding Nome}"
-                                       FontSize="16"
-                                       FontAttributes="Bold" />
-
-                                <!-- Mostrar datas do ano letivo -->
-                                <Label Text="Início do Ano Letivo" />
-                                <DatePicker Date="{Binding DataInicioAno}" />
-
-                                <Label Text="Fim do Ano Letivo" />
-                                <DatePicker Date="{Binding DataFimAno}" />
-
-                                <HorizontalStackLayout Spacing="10">
-                                    <Button Text="Ver Aulas"
-                                            Clicked="OnVerAulasClicked"
-                                            CommandParameter="{Binding}" />
-
-                                    <Button Text="Excluir"
-                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirSalaCommand}"
-                                            CommandParameter="{Binding}" />
-                                </HorizontalStackLayout>
-                            </StackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-
+            <Label Text="Data de Fim do Ano:" />
+            <DatePicker Date="{Binding DataFimAno}" />
         </VerticalStackLayout>
-    </ScrollView>
+
+        <!-- Nome da sala + botão -->
+        <VerticalStackLayout Grid.Row="1" Spacing="10">
+            <Entry Placeholder="Nome da sala"
+                   Text="{Binding NomeSala}" />
+            <Button Text="Adicionar Sala"
+                    Command="{Binding AdicionarSalaCommand}" />
+        </VerticalStackLayout>
+
+        <!-- Lista de Salas -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Salas}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,4" Padding="10" CornerRadius="8" HasShadow="True" BorderColor="LightGray">
+                        <Grid Padding="5"
+                          ColumnDefinitions="*,Auto,Auto"
+                          VerticalOptions="Center">
+
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Nome}" FontAttributes="Bold" />
+                                <Label Text="{Binding DataInicioAnoLetivo, StringFormat='Início: {0:dd/MM/yyyy}'}" FontSize="12" />
+                                <Label Text="{Binding DataFimAnoLetivo, StringFormat='Fim: {0:dd/MM/yyyy}'}" FontSize="12" />
+                            </VerticalStackLayout>
+
+                            <!-- Botão Excluir -->
+                            <Button Grid.Column="1"
+                                Text="Excluir"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SalasViewModel}}, Path=ExcluirSalaCommand}"
+                                CommandParameter="{Binding .}"
+                                Margin="5,0,0,0" />
+
+                            <!-- Botão Entrar -->
+                            <Button Grid.Column="2"
+                                Text="Entrar"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SalasViewModel}}, Path=SelecionarSalaCommand}"
+                                CommandParameter="{Binding .}"
+                                Margin="5,0,0,0" />
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
 </ContentPage>

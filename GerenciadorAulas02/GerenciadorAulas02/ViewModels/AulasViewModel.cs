@@ -1,22 +1,23 @@
-﻿using System;
+﻿using GerenciadorAulas02.Config;
+using GerenciadorAulas02.Helpers;
+using GerenciadorAulas02.Models;
+using GerenciadorAulas02.Services;
+using Microsoft.Maui.Controls;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using GerenciadorAulas02.Models;
-using GerenciadorAulas02.Services;
 
 namespace GerenciadorAulas02.ViewModels;
 
-public class AulasViewModel : BaseViewModel
+public class AulasViewModel : BaseViewModelPreferencias
 {
-    // ================= LISTAS =================
     public ObservableCollection<Aula> Aulas { get; } = new();
     public ObservableCollection<Materia> Materias { get; } = new();
 
     private readonly SalaDeAula? sala;
+    private ConfiguracaoLetivo config;
 
-    // ================= PROPRIEDADES DO FORMULÁRIO =================
     private Materia? materiaSelecionada;
     public Materia? MateriaSelecionada
     {
@@ -25,39 +26,53 @@ public class AulasViewModel : BaseViewModel
         {
             if (SetProperty(ref materiaSelecionada, value) && value != null)
             {
-                // Atualiza duração conforme a matéria ou padrão global
                 DuracaoMinutos = value.Duracao > 0 ? value.Duracao : PreferenciasGlobais.DuracaoPadrao;
             }
         }
     }
 
-    private int quantidadeAulas;
+    private int quantidadeAulas = PreferenciasGlobais.QuantidadeAulasPadrao;
     public int QuantidadeAulas
     {
         get => quantidadeAulas;
         set => SetProperty(ref quantidadeAulas, value);
     }
 
-    private DateTime dataInicial;
-    public DateTime DataInicial
-    {
-        get => dataInicial;
-        set => SetProperty(ref dataInicial, value);
-    }
-
-    private int intervaloDias;
+    private int intervaloDias = PreferenciasGlobais.IntervaloDiasPadrao;
     public int IntervaloDias
     {
         get => intervaloDias;
         set => SetProperty(ref intervaloDias, value);
     }
 
-    private int duracaoMinutos;
+    private int duracaoMinutos = PreferenciasGlobais.DuracaoPadrao;
     public int DuracaoMinutos
     {
         get => duracaoMinutos;
         set => SetProperty(ref duracaoMinutos, value);
     }
+
+    private DateTime dataInicioAno;
+    public DateTime DataInicioAno
+    {
+        get => dataInicioAno;
+        set
+        {
+            if (SetProperty(ref dataInicioAno, value))
+            {
+                dataFimAno = value.AddMonths(10);
+                OnPropertyChanged(nameof(DataFimAno));
+
+                // Atualiza config e salva
+                config.DataInicioAno = value;
+                config.DataFimAno = dataFimAno;
+                ConfigService.Salvar(config);
+            }
+        }
+    }
+
+    private DateTime dataFimAno;
+    public DateTime DataFimAno => dataFimAno;
 
     // ================= COMANDOS =================
     public ICommand AdicionarAulaCommand { get; }
@@ -69,28 +84,46 @@ public class AulasViewModel : BaseViewModel
     // ================= CONSTRUTOR =================
     public AulasViewModel()
     {
-        // Inicializa com valores do PreferenciasGlobais
-        QuantidadeAulas = PreferenciasGlobais.QuantidadeAulasPadrao;
-        IntervaloDias = PreferenciasGlobais.IntervaloDiasPadrao;
-        DuracaoMinutos = PreferenciasGlobais.DuracaoPadrao;
-        DataInicial = PreferenciasGlobais.DataInicioAno;
+        // Carrega config do ano letivo
+        config = ConfigService.Carregar();
+        dataInicioAno = config.DataInicioAno;
+        dataFimAno = config.DataFimAno;
 
-        // Inicializa comandos
         AdicionarAulaCommand = new Command(async () => await AdicionarAula());
         ExcluirAulaCommand = new Command<Aula>(async (a) => await ExcluirAula(a));
         EditarAulaCommand = new Command<Aula>(async (a) => await EditarAula(a));
         GerenciarAlunosCommand = new Command<Aula>(async (a) => await GerenciarAlunos(a));
         GerarAulasCommand = new Command(async () => await GerarAulasParaMateria());
 
-        // Carrega dados
-        _ = LoadAulas();
         _ = LoadMaterias();
+        _ = LoadAulas();
+
+        PreferenciasGlobais.PreferenciasAlteradas += OnPreferenciasAlteradas;
     }
 
     public AulasViewModel(SalaDeAula salaSelecionada) : this()
     {
         sala = salaSelecionada ?? throw new ArgumentNullException(nameof(salaSelecionada));
         _ = LoadAulasForSala();
+    }
+
+    private void OnPreferenciasAlteradas(object? sender, EventArgs e)
+    {
+        AtualizarPreferenciasGlobais();
+    }
+
+    private void AtualizarPreferenciasGlobais()
+    {
+        QuantidadeAulas = PreferenciasGlobais.QuantidadeAulasPadrao;
+        IntervaloDias = PreferenciasGlobais.IntervaloDiasPadrao;
+        DuracaoMinutos = PreferenciasGlobais.DuracaoPadrao;
+
+        config = ConfigService.Carregar();
+        dataInicioAno = config.DataInicioAno;
+        dataFimAno = config.DataFimAno;
+
+        OnPropertyChanged(nameof(DataInicioAno));
+        OnPropertyChanged(nameof(DataFimAno));
     }
 
     // ================= MÉTODOS DE CARREGAMENTO =================
@@ -134,9 +167,10 @@ public class AulasViewModel : BaseViewModel
         {
             Titulo = $"{MateriaSelecionada.Nome} - Aula Avulsa",
             Descricao = $"Aula de {MateriaSelecionada.Nome}",
-            Data = DateTime.Now,
-            Tipo = "Teórica",
+            Inicio = DateTime.Now,
             Duracao = TimeSpan.FromMinutes(DuracaoMinutos),
+            Fim = DateTime.Now.AddMinutes(DuracaoMinutos),
+            Tipo = "Teórica",
             SalaDeAulaId = sala?.Id,
             MateriaId = MateriaSelecionada.Id
         };
@@ -162,7 +196,6 @@ public class AulasViewModel : BaseViewModel
         {
             aula.Titulo = novoTitulo;
             await App.Database.SaveAulaAsync(aula);
-
             if (sala != null) await LoadAulasForSala(); else await LoadAulas();
         }
     }
@@ -174,12 +207,11 @@ public class AulasViewModel : BaseViewModel
         await Application.Current.MainPage.Navigation.PushAsync(new Views.GerenciarAlunosDaAulaPage(aula));
     }
 
-    // ================= GERAR AULAS EM LOTE =================
     private async Task GerarAulasParaMateria()
     {
         if (MateriaSelecionada == null)
         {
-            await Application.Current.MainPage.DisplayAlert("Erro", "Selecione uma matéria", "OK");
+            await AlertHelper.Show("Erro", "Selecione uma matéria");
             return;
         }
 
@@ -191,13 +223,17 @@ public class AulasViewModel : BaseViewModel
 
         for (int i = 0; i < QuantidadeAulas; i++)
         {
+            var inicio = config.DataInicioAno.AddDays(i * IntervaloDias);
+            var fim = inicio.AddMinutes(DuracaoMinutos);
+
             var aula = new Aula
             {
                 Titulo = $"{MateriaSelecionada.Nome} - Aula {i + 1}",
                 Descricao = $"Aula de {MateriaSelecionada.Nome}",
-                Data = DataInicial.AddDays(i * IntervaloDias),
-                Tipo = "Teórica",
+                Inicio = inicio,
+                Fim = fim,
                 Duracao = TimeSpan.FromMinutes(DuracaoMinutos),
+                Tipo = "Teórica",
                 SalaDeAulaId = sala?.Id,
                 MateriaId = MateriaSelecionada.Id
             };
@@ -205,13 +241,8 @@ public class AulasViewModel : BaseViewModel
             await App.Database.SaveAulaAsync(aula);
         }
 
-        // Atualiza lista
         if (sala != null) await LoadAulasForSala(); else await LoadAulas();
 
-        // Reseta para os valores padrão novamente
-        QuantidadeAulas = PreferenciasGlobais.QuantidadeAulasPadrao;
-        IntervaloDias = PreferenciasGlobais.IntervaloDiasPadrao;
-        DuracaoMinutos = PreferenciasGlobais.DuracaoPadrao;
-        DataInicial = PreferenciasGlobais.DataInicioAno;
+        AtualizarPreferenciasGlobais();
     }
 }

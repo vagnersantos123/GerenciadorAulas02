@@ -1,125 +1,64 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using GerenciadorAulas02.Models;
+﻿using GerenciadorAulas02.Models;
 using GerenciadorAulas02.Services;
+using Microsoft.Maui.Controls;
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace GerenciadorAulas02.ViewModels;
 
-public class ConfiguracoesViewModel : BaseViewModel
+public class ConfiguracoesViewModel : INotifyPropertyChanged
 {
-    // ================= MATÉRIAS =================
-    public ObservableCollection<Materia> Materias { get; } = new();
-
-    public ICommand AdicionarMateriaCommand { get; }
-    public ICommand ExcluirMateriaCommand { get; }
-
-    // ================= PREFERÊNCIAS =================
-    private int duracaoPadrao;
-    public int DuracaoPadrao
-    {
-        get => duracaoPadrao;
-        set
-        {
-            if (SetProperty(ref duracaoPadrao, value))
-                PreferenciasGlobais.DuracaoPadrao = value;
-        }
-    }
-
-    private int quantidadeAulasPadrao;
-    public int QuantidadeAulasPadrao
-    {
-        get => quantidadeAulasPadrao;
-        set
-        {
-            if (SetProperty(ref quantidadeAulasPadrao, value))
-                PreferenciasGlobais.QuantidadeAulasPadrao = value;
-        }
-    }
-
-    private DateTime dataInicioAno;
+    // ================= DATAS =================
     public DateTime DataInicioAno
     {
-        get => dataInicioAno;
+        get => PreferenciasGlobais.DataInicioAno;
         set
         {
-            if (SetProperty(ref dataInicioAno, value))
-                PreferenciasGlobais.DataInicioAno = value;
-        }
-    }
-
-    private DateTime dataFimAno;
-    public DateTime DataFimAno
-    {
-        get => dataFimAno;
-        set
-        {
-            if (SetProperty(ref dataFimAno, value))
-                PreferenciasGlobais.DataFimAno = value;
-        }
-    }
-
-    private bool temaEscuro;
-    public bool TemaEscuro
-    {
-        get => temaEscuro;
-        set
-        {
-            if (SetProperty(ref temaEscuro, value))
+            if (PreferenciasGlobais.DataInicioAno != value)
             {
-                PreferenciasGlobais.TemaEscuro = value;
-                Application.Current.UserAppTheme = value ? AppTheme.Dark : AppTheme.Light;
+                PreferenciasGlobais.DataInicioAno = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DataFimAno));
             }
         }
     }
 
-    // ================= CONSTRUTOR =================
-    public ConfiguracoesViewModel()
+    public DateTime DataFimAno => PreferenciasGlobais.DataFimAno;
+
+    // ================= PREFERÊNCIAS =================
+    public int DuracaoPadrao
     {
-        // Inicializa com valores do PreferenciasGlobais
-        duracaoPadrao = PreferenciasGlobais.DuracaoPadrao;
-        quantidadeAulasPadrao = PreferenciasGlobais.QuantidadeAulasPadrao;
-        dataInicioAno = PreferenciasGlobais.DataInicioAno;
-        dataFimAno = PreferenciasGlobais.DataFimAno;
-        temaEscuro = PreferenciasGlobais.TemaEscuro;
-
-        // Comandos de matérias
-        AdicionarMateriaCommand = new Command(async () => await AdicionarMateria());
-        ExcluirMateriaCommand = new Command<Materia>(async (m) => await ExcluirMateria(m));
-
-        // Carrega matérias
-        _ = LoadMaterias();
+        get => PreferenciasGlobais.DuracaoPadrao;
+        set => PreferenciasGlobais.DuracaoPadrao = value;
     }
 
-    // ================= MÉTODOS =================
-    private async Task LoadMaterias()
+    public int QuantidadeAulasPadrao
     {
-        var materias = await App.Database.GetMateriasAsync();
-        MainThread.BeginInvokeOnMainThread(() =>
+        get => PreferenciasGlobais.QuantidadeAulasPadrao;
+        set => PreferenciasGlobais.QuantidadeAulasPadrao = value;
+    }
+
+    public int IntervaloDiasPadrao
+    {
+        get => PreferenciasGlobais.IntervaloDiasPadrao;
+        set => PreferenciasGlobais.IntervaloDiasPadrao = value;
+    }
+
+    public bool TemaEscuro
+    {
+        get => PreferenciasGlobais.TemaEscuro;
+        set
         {
-            Materias.Clear();
-            foreach (var m in materias) Materias.Add(m);
-        });
+            PreferenciasGlobais.TemaEscuro = value;
+            Application.Current.UserAppTheme = value ? AppTheme.Dark : AppTheme.Light;
+        }
     }
 
-    private async Task AdicionarMateria()
-    {
-        string nome = await Application.Current.MainPage.DisplayPromptAsync("Nova Matéria", "Nome da matéria:");
-        if (string.IsNullOrWhiteSpace(nome)) return;
-
-        var materia = new Materia { Nome = nome };
-        await App.Database.SaveMateriaAsync(materia);
-
-        await LoadMaterias();
-    }
-
-    private async Task ExcluirMateria(Materia materia)
-    {
-        if (materia == null) return;
-
-        await App.Database.DeleteMateriaAsync(materia);
-        await LoadMaterias();
-    }
+    // ================= EVENTO =================
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string nome = "")
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nome));
 }

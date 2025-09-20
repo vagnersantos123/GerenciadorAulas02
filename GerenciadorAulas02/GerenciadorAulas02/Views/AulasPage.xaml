@@ -1,98 +1,69 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:GerenciadorAulas02.ViewModels"
              x:Class="GerenciadorAulas02.Views.AulasPage"
-             x:Name="ThisPage"
              Title="Aulas">
 
-    <!-- BindingContext -->
     <ContentPage.BindingContext>
         <viewmodels:AulasViewModel />
     </ContentPage.BindingContext>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="25">
+    <StackLayout Padding="20" Spacing="15">
 
-            <!-- ================= FORMULÁRIO DE GERAÇÃO ================= -->
-            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Gerar Aulas" FontSize="20" FontAttributes="Bold" />
+        <!-- Seleção de Matéria -->
+        <Label Text="Matéria:" />
+        <Picker ItemsSource="{Binding Materias}"
+                ItemDisplayBinding="{Binding Nome}"
+                SelectedItem="{Binding MateriaSelecionada}" />
 
-                    <!-- Seleção da Matéria -->
-                    <Picker Title="Selecione a matéria"
-                            ItemsSource="{Binding Materias}"
-                            ItemDisplayBinding="{Binding Nome}"
-                            SelectedItem="{Binding MateriaSelecionada}" />
+        <!-- Quantidade de Aulas -->
+        <Label Text="Quantidade de Aulas:" />
+        <Entry Keyboard="Numeric"
+               Text="{Binding QuantidadeAulas}" />
 
-                    <!-- Quantidade de aulas -->
-                    <HorizontalStackLayout Spacing="10">
-                        <Label Text="Quantidade de aulas:" VerticalOptions="Center"/>
-                        <Entry Text="{Binding QuantidadeAulas, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
-                    </HorizontalStackLayout>
+        <!-- Intervalo entre Aulas -->
+        <Label Text="Intervalo de Dias:" />
+        <Entry Keyboard="Numeric"
+               Text="{Binding IntervaloDias}" />
 
-                    <!-- Intervalo de dias -->
-                    <HorizontalStackLayout Spacing="10">
-                        <Label Text="Intervalo entre aulas (dias):" VerticalOptions="Center"/>
-                        <Entry Text="{Binding IntervaloDias, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
-                    </HorizontalStackLayout>
+        <!-- Duração das Aulas -->
+        <Label Text="Duração (minutos):" />
+        <Entry Keyboard="Numeric"
+               Text="{Binding DuracaoMinutos}" />
 
-                    <!-- Duração -->
-                    <HorizontalStackLayout Spacing="10">
-                        <Label Text="Duração (minutos):" VerticalOptions="Center"/>
-                        <Entry Text="{Binding DuracaoMinutos, Mode=TwoWay}" Keyboard="Numeric" WidthRequest="80"/>
-                    </HorizontalStackLayout>
+        <!-- Datas -->
+        <Label Text="Data Inicial:" />
+        <DatePicker Date="{Binding DataInicioAno}" />
 
-                    <!-- Data inicial -->
-                    <HorizontalStackLayout Spacing="10">
-                        <Label Text="Data inicial:" VerticalOptions="Center"/>
-                        <DatePicker Date="{Binding DataInicial, Mode=TwoWay}" />
-                    </HorizontalStackLayout>
+        <Label Text="Data Final:" />
+        <DatePicker Date="{Binding DataFimAno}" IsEnabled="False" />
 
-                    <!-- Botão gerar -->
-                    <Button Text="Gerar Aulas"
-                            Command="{Binding GerarAulasCommand}" />
-                </VerticalStackLayout>
-            </Frame>
+        <!-- Botões -->
+        <Button Text="Adicionar Aula"
+                Command="{Binding AdicionarAulaCommand}" />
 
-            <!-- ================= LISTA DE AULAS ================= -->
-            <Frame BorderColor="Gray" Padding="15" CornerRadius="10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Aulas Cadastradas" FontSize="20" FontAttributes="Bold" />
+        <Button Text="Gerar Aulas em Lote"
+                Command="{Binding GerarAulasCommand}" />
 
-                    <CollectionView ItemsSource="{Binding Aulas}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Frame BorderColor="LightGray" Padding="10" Margin="4">
-                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" VerticalOptions="Center">
-                                        <!-- Título da aula -->
-                                        <Label Text="{Binding Titulo}" Grid.Column="0" VerticalOptions="Center" />
+        <!-- Lista de Aulas -->
+        <CollectionView ItemsSource="{Binding Aulas}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Orientation="Horizontal" Padding="5">
+                        <Label Text="{Binding Titulo}" VerticalOptions="Center" />
+                        <Button Text="Editar"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AulasViewModel}}, Path=EditarAulaCommand}"
+                                CommandParameter="{Binding .}" />
+                        <Button Text="Excluir"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AulasViewModel}}, Path=ExcluirAulaCommand}"
+                                CommandParameter="{Binding .}" />
+                        <Button Text="Alunos"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AulasViewModel}}, Path=GerenciarAlunosCommand}"
+                                CommandParameter="{Binding .}" />
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-                                        <!-- Editar -->
-                                        <Button Text="Editar"
-                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.EditarAulaCommand}"
-                                                CommandParameter="{Binding}"
-                                                Grid.Column="1" />
-
-                                        <!-- Gerenciar Alunos -->
-                                        <Button Text="Alunos"
-                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.GerenciarAlunosCommand}"
-                                                CommandParameter="{Binding}"
-                                                Grid.Column="2" />
-
-                                        <!-- Excluir -->
-                                        <Button Text="Excluir"
-                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ExcluirAulaCommand}"
-                                                CommandParameter="{Binding}"
-                                                Grid.Column="3" />
-                                    </Grid>
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </Frame>
-
-        </VerticalStackLayout>
-    </ScrollView>
+    </StackLayout>
 </ContentPage>

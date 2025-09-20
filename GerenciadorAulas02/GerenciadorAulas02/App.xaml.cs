@@ -13,7 +13,8 @@ public partial class App : Application
     {
         InitializeComponent();
 
-
+        // Limpa valores antigos e garante compatibilidade
+        PreferenciasGlobais.ResetDatasAntigas();
 
         // Caminho do arquivo SQLite
         string dbPath = Path.Combine(FileSystem.AppDataDirectory, "GerenciadorAulas.db3");

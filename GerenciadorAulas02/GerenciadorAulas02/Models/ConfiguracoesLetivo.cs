@@ -33,6 +33,6 @@ namespace GerenciadorAulas02.Models
         /// <summary>
         /// Lista de feriados no ano letivo.
         /// </summary>
-        public List<DateTime> Feriados { get; set; } = new List<DateTime>();
+        public List<DateTime> Feriados { get; set; } = new();
     }
 }

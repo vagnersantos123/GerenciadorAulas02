@@ -10,13 +10,15 @@ public class Aula : INotifyPropertyChanged
     private int id;
     private string titulo = string.Empty;
     private string descricao = string.Empty;
-    private DateTime data;
     private TimeSpan duracao;
     private string tipo = "Teórica";
 
     private int? salaDeAulaId;
     private int? materiaId;
-    private Materia? materia; // 🔹 backing field da matéria
+    private Materia? materia;
+
+    private DateTime inicio;
+    private DateTime fim;
 
     [PrimaryKey, AutoIncrement]
     public int Id
@@ -37,12 +39,6 @@ public class Aula : INotifyPropertyChanged
         set { descricao = value; OnPropertyChanged(nameof(Descricao)); }
     }
 
-    public DateTime Data
-    {
-        get => data;
-        set { data = value; OnPropertyChanged(nameof(Data)); }
-    }
-
     public TimeSpan Duracao
     {
         get => duracao;
@@ -55,21 +51,18 @@ public class Aula : INotifyPropertyChanged
         set { tipo = value; OnPropertyChanged(nameof(Tipo)); }
     }
 
-    // 🔹 Chave estrangeira para Sala
     public int? SalaDeAulaId
     {
         get => salaDeAulaId ?? 0;
         set { salaDeAulaId = value; OnPropertyChanged(nameof(SalaDeAulaId)); }
     }
 
-    // 🔹 Chave estrangeira para Matéria
     public int? MateriaId
     {
         get => materiaId ?? 0;
         set { materiaId = value; OnPropertyChanged(nameof(MateriaId)); }
     }
 
-    // 🔹 Propriedade de navegação (não mapeada no SQLite)
     [Ignore]
     public Materia? Materia
     {
@@ -79,10 +72,10 @@ public class Aula : INotifyPropertyChanged
             materia = value;
             OnPropertyChanged(nameof(Materia));
 
-            // ✅ Se a Aula ainda não tem duração definida, pega a da Matéria
             if (materia != null && duracao == default)
             {
                 Duracao = TimeSpan.FromMinutes(materia.Duracao);
+                Fim = Inicio.Add(Duracao);
             }
         }
     }
@@ -90,13 +83,42 @@ public class Aula : INotifyPropertyChanged
     [Ignore]
     public List<string> AlunosPresentes { get; set; } = new List<string>();
 
+    public DateTime Inicio
+    {
+        get => inicio;
+        set
+        {
+            inicio = value;
+            OnPropertyChanged(nameof(Inicio));
+
+            // Atualiza fim automaticamente se a duração já estiver definida
+            if (duracao != default)
+                fim = inicio.Add(duracao);
+            OnPropertyChanged(nameof(Fim));
+        }
+    }
+
+    public DateTime Fim
+    {
+        get => fim;
+        set
+        {
+            fim = value;
+            OnPropertyChanged(nameof(Fim));
+
+            // Atualiza duração com base no início e fim
+            duracao = fim - inicio;
+            OnPropertyChanged(nameof(Duracao));
+        }
+    }
+
     [Ignore]
     public string Resumo
     {
         get
         {
             string materiaNome = Materia != null ? Materia.Nome : "Sem matéria";
-            return $"{Titulo} - {materiaNome} ({Tipo}) - {Data:dd/MM/yyyy HH:mm}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
+            return $"{Titulo} - {materiaNome} ({Tipo}) - {Inicio:dd/MM/yyyy HH:mm} até {Fim:HH:mm}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
         }
     }
 
