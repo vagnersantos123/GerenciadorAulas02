@@ -89,7 +89,7 @@ public class AulasViewModel : BaseViewModelPreferencias
         }
     }
 
-    private bool mostrarCriacaoAulas = true;
+    private bool mostrarCriacaoAulas = false;
     public bool MostrarCriacaoAulas
     {
         get => mostrarCriacaoAulas;

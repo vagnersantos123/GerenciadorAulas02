@@ -9,33 +9,26 @@
         <viewmodels:AulasViewModel />
     </ContentPage.BindingContext>
 
-    <StackLayout Padding="20" Spacing="15">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="15">
 
-        <!-- Cabeçalho clicável (setinha + texto) -->
-        <Grid ColumnDefinitions="Auto,*"
-              VerticalOptions="Center"
-              Padding="5">
-
-            <!-- Setinha que gira -->
+        <!-- Cabeçalho clicável -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" VerticalOptions="Center" Padding="5">
             <Label Text="▶"
                    FontSize="20"
                    TextColor="Black"
                    Rotation="{Binding MostrarCriacaoAulas, Converter={StaticResource BoolParaAnguloConverter}}" />
-
-            <!-- Texto ao lado -->
             <Label Grid.Column="1"
                    Text="Adicionar Aulas"
                    VerticalOptions="Center"
                    FontSize="16" />
-
-            <!-- Clique no grid inteiro -->
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding AlternarCriacaoAulasCommand}" />
             </Grid.GestureRecognizers>
         </Grid>
 
         <!-- Parte oculta: criação de aulas -->
-        <StackLayout IsVisible="{Binding MostrarCriacaoAulas}" 
+        <StackLayout Grid.Row="1"
+                     IsVisible="{Binding MostrarCriacaoAulas}" 
                      Spacing="10" Padding="10" BackgroundColor="#f5f5f5">
 
             <Label Text="Matéria:" />
@@ -68,47 +61,45 @@
                     Command="{Binding GerarAulasCommand}" />
         </StackLayout>
 
-        <!-- Barra de Pesquisa fixa -->
-        <SearchBar Placeholder="Pesquisar aulas..."
+        <!-- Barra de Pesquisa -->
+        <SearchBar Grid.Row="2"
+                   Placeholder="Pesquisar aulas..."
                    Text="{Binding Pesquisa, Mode=TwoWay}" />
 
         <!-- Lista de Aulas rolável -->
-        <ScrollView>
-            <CollectionView ItemsSource="{Binding Aulas}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="5" ColumnDefinitions="*,Auto">
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Aulas}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="5" ColumnDefinitions="*,Auto">
 
-                            <!-- Coluna 0: Data e Título -->
-                            <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
-                                <Label Text="{Binding DiaAulaFormatado}" 
-                                       VerticalOptions="Center" 
-                                       FontAttributes="Bold" 
-                                       TextColor="DarkBlue" 
-                                       FontSize="14"/>
-                                <Label Text="{Binding Titulo}" 
-                                       VerticalOptions="Center" 
-                                       FontSize="16"/>
-                            </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                            <Label Text="{Binding DiaAulaFormatado}" 
+                                   VerticalOptions="Center" 
+                                   FontAttributes="Bold" 
+                                   TextColor="DarkBlue" 
+                                   FontSize="14"/>
+                            <Label Text="{Binding Titulo}" 
+                                   VerticalOptions="Center" 
+                                   FontSize="16"/>
+                        </HorizontalStackLayout>
 
-                            <!-- Coluna 1: Botões -->
-                            <HorizontalStackLayout Grid.Column="1" Spacing="5">
-                                <Button Text="Editar"
-                                        Command="{Binding BindingContext.EditarAulaCommand, Source={x:Reference ThisPage}}"
-                                        CommandParameter="{Binding .}" />
-                                <Button Text="Excluir"
-                                        Command="{Binding BindingContext.ExcluirAulaCommand, Source={x:Reference ThisPage}}"
-                                        CommandParameter="{Binding .}" />
-                                <Button Text="Alunos"
-                                        Command="{Binding BindingContext.GerenciarAlunosCommand, Source={x:Reference ThisPage}}"
-                                        CommandParameter="{Binding .}" />
-                            </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="5">
+                            <Button Text="Editar"
+                                    Command="{Binding BindingContext.EditarAulaCommand, Source={x:Reference ThisPage}}"
+                                    CommandParameter="{Binding .}" />
+                            <Button Text="Excluir"
+                                    Command="{Binding BindingContext.ExcluirAulaCommand, Source={x:Reference ThisPage}}"
+                                    CommandParameter="{Binding .}" />
+                            <Button Text="Alunos"
+                                    Command="{Binding BindingContext.GerenciarAlunosCommand, Source={x:Reference ThisPage}}"
+                                    CommandParameter="{Binding .}" />
+                        </HorizontalStackLayout>
 
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </ScrollView>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-    </StackLayout>
+    </Grid>
 </ContentPage>
