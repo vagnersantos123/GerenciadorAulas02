@@ -1,39 +1,40 @@
 ﻿using SQLite;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using GerenciadorAulas02.Services;
-
-namespace GerenciadorAulas02.Models;
+using GerenciadorAulas02;
 
 public class Materia : INotifyPropertyChanged
 {
-    private int id;
-    private string nome = string.Empty;
-
-    // Adicionadno uma duracao a materia
-    private int? duracao; // duração em minutos
+    private int duracao = PreferenciasGlobais.DuracaoPadrao;
 
     [PrimaryKey, AutoIncrement]
-    public int Id
-    {
-        get => id;
-        set { id = value; OnPropertyChanged(nameof(Id)); }
-    }
+    public int Id { get; set; }
 
+    private string nome = string.Empty;
     public string Nome
     {
         get => nome;
-        set { nome = value; OnPropertyChanged(nameof(Nome)); }
+        set { nome = value; OnPropertyChanged(); }
     }
 
     public int Duracao
     {
-        get => duracao ?? PreferenciasGlobais.DuracaoPadrao;
-        set { duracao = value; OnPropertyChanged(nameof(Duracao)); }
-    }   
+        get => duracao;
+        set
+        {
+            if (duracao != value)
+            {
+                duracao = value;
+                OnPropertyChanged();
 
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                // salva automaticamente no banco
+                _ = App.Database.SaveMateriaAsync(this);
+            }
+        }
     }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string nome = "")
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nome));
 }
