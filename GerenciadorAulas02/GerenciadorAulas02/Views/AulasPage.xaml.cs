@@ -21,4 +21,12 @@ public partial class AulasPage : ContentPage
         InitializeComponent();
         BindingContext = new AulasViewModel(sala);
     }
+    private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (BindingContext is AulasViewModel vm)
+        {
+            vm.FiltrarAulas(e.NewTextValue);
+        }
+    }
+
 }

@@ -8,15 +8,33 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+
 namespace GerenciadorAulas02.ViewModels;
 
 public class AulasViewModel : BaseViewModelPreferencias
 {
+    public List<Aula> TodasAulas { get; set; } = new();
     public ObservableCollection<Aula> Aulas { get; } = new();
     public ObservableCollection<Materia> Materias { get; } = new();
 
     private readonly SalaDeAula? sala;
     private ConfiguracaoLetivo config;
+
+    private string pesquisa = string.Empty;
+    public string Pesquisa
+    {
+        get => pesquisa;
+        set
+        {
+            // SetProperty vem do BaseViewModelPreferencias; dispara OnPropertyChanged
+            if (SetProperty(ref pesquisa, value))
+            {
+                // chama filtro sempre que o texto muda
+                FiltrarAulas(pesquisa);
+            }
+        }
+    }
+
 
     private Materia? materiaSelecionada;
     public Materia? MateriaSelecionada
@@ -71,6 +89,14 @@ public class AulasViewModel : BaseViewModelPreferencias
         }
     }
 
+    private bool mostrarCriacaoAulas = true;
+    public bool MostrarCriacaoAulas
+    {
+        get => mostrarCriacaoAulas;
+        set => SetProperty(ref mostrarCriacaoAulas, value);
+    }
+
+
     private DateTime dataFimAno;
     public DateTime DataFimAno => dataFimAno;
 
@@ -80,6 +106,7 @@ public class AulasViewModel : BaseViewModelPreferencias
     public ICommand EditarAulaCommand { get; }
     public ICommand GerenciarAlunosCommand { get; }
     public ICommand GerarAulasCommand { get; }
+    public ICommand AlternarCriacaoAulasCommand { get; }
 
     // ================= CONSTRUTOR =================
     public AulasViewModel()
@@ -99,6 +126,11 @@ public class AulasViewModel : BaseViewModelPreferencias
         _ = LoadAulas();
 
         PreferenciasGlobais.PreferenciasAlteradas += OnPreferenciasAlteradas;
+
+        AlternarCriacaoAulasCommand = new Command(() =>
+        {
+            MostrarCriacaoAulas = !MostrarCriacaoAulas;
+        });
     }
 
     public AulasViewModel(SalaDeAula salaSelecionada) : this()
@@ -130,8 +162,8 @@ public class AulasViewModel : BaseViewModelPreferencias
     private async Task LoadAulas()
     {
         var aulas = await App.Database.GetAulasComMateriasAsync();
-        Aulas.Clear();
-        foreach (var a in aulas) Aulas.Add(a);
+        TodasAulas = aulas.ToList();        // guarda a lista completa
+        FiltrarAulas(Pesquisa);            // popula Aulas já filtrada pelo texto atual
     }
 
     private async Task LoadAulasForSala()
@@ -143,8 +175,8 @@ public class AulasViewModel : BaseViewModelPreferencias
         }
 
         var aulas = await App.Database.GetAulasBySalaComMateriasAsync(sala.Id);
-        Aulas.Clear();
-        foreach (var a in aulas) Aulas.Add(a);
+        TodasAulas = aulas.ToList();
+        FiltrarAulas(Pesquisa);
     }
 
     private async Task LoadMaterias()
@@ -172,7 +204,8 @@ public class AulasViewModel : BaseViewModelPreferencias
             Fim = DateTime.Now.AddMinutes(DuracaoMinutos),
             Tipo = "Teórica",
             SalaDeAulaId = sala?.Id,
-            MateriaId = MateriaSelecionada.Id
+            MateriaId = MateriaSelecionada.Id,
+            DiaAula = DateTime.Now
         };
 
         await App.Database.SaveAulaAsync(aula);
@@ -244,5 +277,24 @@ public class AulasViewModel : BaseViewModelPreferencias
         if (sala != null) await LoadAulasForSala(); else await LoadAulas();
 
         AtualizarPreferenciasGlobais();
+
     }
+
+    
+
+public void FiltrarAulas(string searchText)
+{
+    var filtradas = FilterHelper.Filter(
+        TodasAulas, // lista original
+        searchText,
+        a => a.Titulo,
+        a => a.Materia?.Nome,
+        a => a.DiaAula.ToString("dd/MM/yyyy")
+    );
+
+    Aulas.Clear();
+    foreach (var aula in filtradas)
+        Aulas.Add(aula);
+}
+
 }

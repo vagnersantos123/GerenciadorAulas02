@@ -19,6 +19,7 @@ public class Aula : INotifyPropertyChanged
 
     private DateTime inicio;
     private DateTime fim;
+    private DateTime diaAula;
 
     [PrimaryKey, AutoIncrement]
     public int Id
@@ -62,6 +63,15 @@ public class Aula : INotifyPropertyChanged
         get => materiaId ?? 0;
         set { materiaId = value; OnPropertyChanged(nameof(MateriaId)); }
     }
+
+    public DateTime DiaAula
+    {
+        get => diaAula;
+        set { diaAula = value; OnPropertyChanged(nameof(DiaAula)); }
+    }
+
+    public string DiaAulaFormatado => DiaAula.ToString("dd/MM/yyyy");
+
 
     [Ignore]
     public Materia? Materia
