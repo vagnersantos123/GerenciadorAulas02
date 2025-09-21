@@ -11,7 +11,7 @@
 
     <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="15">
 
-        <!-- Cabeçalho clicável -->
+        <!-- Cabeçalho clicável (setinha + texto) -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*" VerticalOptions="Center" Padding="5">
             <Label Text="▶"
                    FontSize="20"
@@ -61,10 +61,21 @@
                     Command="{Binding GerarAulasCommand}" />
         </StackLayout>
 
-        <!-- Barra de Pesquisa -->
-        <SearchBar Grid.Row="2"
-                   Placeholder="Pesquisar aulas..."
-                   Text="{Binding Pesquisa, Mode=TwoWay}" />
+        <!-- Barra de pesquisa + botão "Hoje" -->
+        <!-- Barra de pesquisa + checkbox "Hoje" -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+            <SearchBar Grid.Column="0"
+               Placeholder="Pesquisar aulas..."
+               Text="{Binding Pesquisa, Mode=TwoWay}"
+               HorizontalOptions="FillAndExpand" />
+
+            <!-- CheckBox para filtrar aulas de hoje -->
+            <HorizontalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="5">
+                <CheckBox IsChecked="{Binding FiltrarHoje}" />
+                <Label Text="Hoje" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+        </Grid>
+
 
         <!-- Lista de Aulas rolável -->
         <CollectionView Grid.Row="3"
@@ -72,7 +83,6 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="5" ColumnDefinitions="*,Auto">
-
                         <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
                             <Label Text="{Binding DiaAulaFormatado}" 
                                    VerticalOptions="Center" 
@@ -95,7 +105,6 @@
                                     Command="{Binding BindingContext.GerenciarAlunosCommand, Source={x:Reference ThisPage}}"
                                     CommandParameter="{Binding .}" />
                         </HorizontalStackLayout>
-
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

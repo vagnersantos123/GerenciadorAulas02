@@ -89,6 +89,23 @@ public class AulasViewModel : BaseViewModelPreferencias
         }
     }
 
+    private bool filtrarHoje;
+    public bool FiltrarHoje
+    {
+        get => filtrarHoje;
+        set
+        {
+            if (SetProperty(ref filtrarHoje, value))
+            {
+                if (filtrarHoje)
+                    FiltrarAulasDeHoje();
+                else
+                    FiltrarAulas(Pesquisa); // volta ao filtro normal
+            }
+        }
+    }
+
+
     private bool mostrarCriacaoAulas = false;
     public bool MostrarCriacaoAulas
     {
@@ -107,6 +124,7 @@ public class AulasViewModel : BaseViewModelPreferencias
     public ICommand GerenciarAlunosCommand { get; }
     public ICommand GerarAulasCommand { get; }
     public ICommand AlternarCriacaoAulasCommand { get; }
+    public ICommand FiltrarHojeCommand { get; }
 
     // ================= CONSTRUTOR =================
     public AulasViewModel()
@@ -121,6 +139,7 @@ public class AulasViewModel : BaseViewModelPreferencias
         EditarAulaCommand = new Command<Aula>(async (a) => await EditarAula(a));
         GerenciarAlunosCommand = new Command<Aula>(async (a) => await GerenciarAlunos(a));
         GerarAulasCommand = new Command(async () => await GerarAulasParaMateria());
+        FiltrarHojeCommand = new Command(FiltrarAulasDeHoje);
 
         _ = LoadMaterias();
         _ = LoadAulas();
@@ -132,6 +151,20 @@ public class AulasViewModel : BaseViewModelPreferencias
             MostrarCriacaoAulas = !MostrarCriacaoAulas;
         });
     }
+
+    private void FiltrarAulasDeHoje()
+    {
+        var hoje = DateTime.Today;
+
+        var aulasHoje = TodasAulas
+            .Where(a => a.DiaAula.Date == hoje)
+            .ToList();
+
+        Aulas.Clear();
+        foreach (var aula in aulasHoje)
+            Aulas.Add(aula);
+    }
+
 
     public AulasViewModel(SalaDeAula salaSelecionada) : this()
     {
