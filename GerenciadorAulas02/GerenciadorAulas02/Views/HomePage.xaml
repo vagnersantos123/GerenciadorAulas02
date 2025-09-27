@@ -5,6 +5,11 @@
              Title="Home">
 
     <VerticalStackLayout Padding="20" Spacing="15">
+        <Button 
+            Text="Visualizar Salas" 
+            Clicked="OnVisualizarSalasClicked"/>
+
+
         <Button Text="Gerenciar Salas"
             Clicked="OnGerenciarSalasClicked" />
 

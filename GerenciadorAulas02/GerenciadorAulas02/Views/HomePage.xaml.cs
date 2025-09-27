@@ -24,13 +24,15 @@ public partial class HomePage : ContentPage
         await Navigation.PushAsync(new SalasPage());
     }
 
-    //private async void OnGerenciarAulasClicked(object sender, EventArgs e)
-    //{
-    //    await Navigation.PushAsync(new AulasPage());
-    //}
-
     private async void OnConfiguracoesClicked(object sender, EventArgs e)
     {
         await Navigation.PushAsync(new ConfiguracoesPage());
     }
+
+    // a visuallizar ainda nao foi criada por isso o erro aqui.
+    private async void OnVisualizarSalasClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new VisualizarSalasPage(App.Database));
+    }
+
 }
