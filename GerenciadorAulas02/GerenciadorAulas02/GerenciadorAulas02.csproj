@@ -88,6 +88,12 @@
 	  <MauiXaml Update="Views\SalasPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\VisualizarAulaDetalhePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\VisualizarAulasPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\VisualizarSalasPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
