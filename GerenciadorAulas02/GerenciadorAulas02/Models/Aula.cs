@@ -12,6 +12,7 @@ public class Aula : INotifyPropertyChanged
     private string descricao = string.Empty;
     private TimeSpan duracao;
     private string tipo = "Teórica";
+    private bool finalizada = false;
 
     private int? salaDeAulaId;
     private int? materiaId;
@@ -50,6 +51,12 @@ public class Aula : INotifyPropertyChanged
     {
         get => tipo;
         set { tipo = value; OnPropertyChanged(nameof(Tipo)); }
+    }
+
+    public bool Finalizada
+    {
+        get => finalizada;
+        set { finalizada = value; OnPropertyChanged(nameof(Finalizada)); }
     }
 
     public int? SalaDeAulaId

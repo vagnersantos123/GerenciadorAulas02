@@ -35,14 +35,18 @@ public class VisualizarSalasViewModel : BaseViewModel
 
         foreach (var sala in lista)
         {
-            var count = await database.GetAulasCountBySalaAsync(sala.Id);
+            var total = await database.GetAulasCountBySalaAsync(sala.Id);
+            var finalizadas = await database.GetAulasFinalizadasCountBySalaAsync(sala.Id);
+
             Salas.Add(new SalaDeAulaView
             {
                 Id = sala.Id,
                 Nome = sala.Nome,
                 Descricao = sala.Descricao,
-                QuantidadeAulas = count
+                QuantidadeAulas = total,
+                AulasFinalizadas = finalizadas
             });
         }
     }
+
 }

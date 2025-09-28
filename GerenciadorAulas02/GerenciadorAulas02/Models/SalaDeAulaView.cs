@@ -6,4 +6,5 @@ public class SalaDeAulaView
     public string Nome { get; set; } = string.Empty;
     public string? Descricao { get; set; }
     public int QuantidadeAulas { get; set; }
+    public int AulasFinalizadas { get; set; }
 }

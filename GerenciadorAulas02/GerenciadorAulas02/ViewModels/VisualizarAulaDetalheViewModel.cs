@@ -1,21 +1,44 @@
 ﻿using GerenciadorAulas02.Models;
+using System.Windows.Input;
 
 namespace GerenciadorAulas02.ViewModels;
 
 public class VisualizarAulaDetalheViewModel : BaseViewModel
 {
-    public string Titulo { get; }
-    public DateTime DiaAula { get; }
-    public TimeSpan Duracao { get; }
-    public string Descricao { get; }
+    private readonly Aula aula; // referência da aula
+
+    public string Titulo => aula.Titulo;
+    public DateTime DiaAula => aula.DiaAula;
+    public TimeSpan Duracao => aula.Duracao;
+    public string Descricao => aula.Descricao;
+
+    public ICommand FinalizarAulaCommand { get; } // comando para finalizar a aula
 
     public VisualizarAulaDetalheViewModel(Aula aula)
     {
+       
         if (aula == null) throw new ArgumentNullException(nameof(aula));
 
-        Titulo = aula.Titulo;
-        DiaAula = aula.DiaAula;
-        Duracao = aula.Duracao;
-        Descricao = aula.Descricao;
+        this.aula = aula; // guarda a referência
+
+        FinalizarAulaCommand = new Command(FinalizarAula);
     }
+
+    public bool Finalizada
+    {
+        get => aula.Finalizada;
+        set
+        {
+            if (aula.Finalizada != value)
+            {
+                aula.Finalizada = value;
+                OnPropertyChanged(nameof(Finalizada));
+            }
+        }
+    }
+    private void FinalizarAula()
+    {
+        Finalizada = true;
+    }
+
 }

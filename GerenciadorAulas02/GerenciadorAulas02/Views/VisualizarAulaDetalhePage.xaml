@@ -1,7 +1,15 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:GerenciadorAulas02.Converters"
              x:Class="GerenciadorAulas02.Views.VisualizarAulaDetalhePage"
              Title="Detalhes da Aula">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <converters:AulaFinalizadaTextConverter x:Key="FinalizadaToTextConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="10">
@@ -9,6 +17,11 @@
             <Label Text="{Binding DiaAula, StringFormat='Data: {0:dd/MM/yyyy}'}" FontSize="16"/>
             <Label Text="{Binding Duracao, StringFormat='Duração: {0:h\\:mm}'}" FontSize="16"/>
             <Label Text="{Binding Descricao}" FontSize="16"/>
+
+            <Button
+                Command="{Binding FinalizarAulaCommand}"
+                Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}"
+                IsEnabled="{Binding Finalizada, Converter={StaticResource InverseBoolConverter}}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

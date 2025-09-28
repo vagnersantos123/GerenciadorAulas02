@@ -18,6 +18,13 @@ public class AulaDatabase
         _database.CreateTableAsync<SalaDeAula>().Wait();
         _database.CreateTableAsync<Materia>().Wait();
     }
+    public Task<int> GetAulasFinalizadasCountBySalaAsync(int salaId)
+    {
+        return _database.Table<Aula>()
+                       .Where(a => a.SalaDeAulaId == salaId && a.Finalizada)
+                       .CountAsync();
+    }
+
 
     // ====================
     // CRUD AULA

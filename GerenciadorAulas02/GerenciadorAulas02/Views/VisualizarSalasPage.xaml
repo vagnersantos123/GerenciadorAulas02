@@ -16,6 +16,7 @@
                     <VerticalStackLayout>
                         <Label Text="{Binding Nome}" FontSize="20" FontAttributes="Bold"/>
                         <Label Text="{Binding QuantidadeAulas, StringFormat='Aulas: {0}'}" FontSize="14"/>
+                        <Label Text="{Binding AulasFinalizadas, StringFormat='Finalizadas: {0}'}" />
                     </VerticalStackLayout>
                 </Frame>
             </DataTemplate>
