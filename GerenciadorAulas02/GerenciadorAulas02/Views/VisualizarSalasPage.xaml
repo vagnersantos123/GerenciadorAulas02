@@ -4,17 +4,25 @@
              x:Class="GerenciadorAulas02.Views.VisualizarSalasPage"
              Title="Salas">
 
-   
+    <CollectionView ItemsSource="{Binding Salas}"
+                SelectionMode="Single"
+                SelectionChanged="OnSalaSelected">
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Frame BorderColor="LightGray"
+                   CornerRadius="10"
+                   Padding="10"
+                   Margin="5">
+                    <VerticalStackLayout>
+                        <Label Text="{Binding Nome}" FontSize="20" FontAttributes="Bold"/>
+                        <Label Text="{Binding QuantidadeAulas, StringFormat='Aulas: {0}'}" FontSize="14"/>
+                    </VerticalStackLayout>
+                </Frame>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
 
-    <ContentPage.Content>
-        <CollectionView ItemsSource="{Binding Salas}" SelectionMode="Single" SelectionChanged="OnSalaSelected">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame Padding="10" Margin="5" BorderColor="LightGray" CornerRadius="10">
-                        <Label Text="{Binding Nome}" FontSize="18"/>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </ContentPage.Content>
+
+
 </ContentPage>
+

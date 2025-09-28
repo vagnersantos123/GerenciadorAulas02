@@ -104,6 +104,23 @@ public class AulaDatabase
     {
         return _database.DeleteAsync(aula);
     }
+
+    // no topo do arquivo já existe: using SQLite; using GerenciadorAulas02.Models;
+    public async Task<SalaDeAula?> GetSalaByIdAsync(int id)
+    {
+        return await _database.Table<SalaDeAula>()
+                              .Where(s => s.Id == id)
+                              .FirstOrDefaultAsync();
+    }
+
+    public Task<int> GetAulasCountBySalaAsync(int salaId)
+    {
+        // Conta apenas, sem carregar todas as aulas
+        return _database.Table<Aula>()
+                        .Where(a => a.SalaDeAulaId == salaId)
+                        .CountAsync();
+    }
+
     #endregion
 
     // ====================

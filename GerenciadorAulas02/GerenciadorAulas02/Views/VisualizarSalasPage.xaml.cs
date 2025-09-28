@@ -17,10 +17,11 @@ public partial class VisualizarSalasPage : ContentPage
 
     private void OnSalaSelected(object sender, SelectionChangedEventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is SalaDeAula sala)
+        if (e.CurrentSelection.FirstOrDefault() is SalaDeAulaView salaView)
         {
-            viewModel.SalaSelecionadaCommand.Execute(sala);
+            viewModel.SalaSelecionadaCommand.Execute(salaView);
             ((CollectionView)sender).SelectedItem = null; // limpa a seleção
         }
     }
+
 }
