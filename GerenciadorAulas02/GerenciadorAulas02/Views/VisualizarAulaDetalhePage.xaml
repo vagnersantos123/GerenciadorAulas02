@@ -12,16 +12,45 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="10">
-            <Label Text="{Binding Titulo}" FontSize="24" FontAttributes="Bold"/>
-            <Label Text="{Binding DiaAula, StringFormat='Data: {0:dd/MM/yyyy}'}" FontSize="16"/>
-            <Label Text="{Binding Duracao, StringFormat='Duração: {0:h\\:mm}'}" FontSize="16"/>
-            <Label Text="{Binding Descricao}" FontSize="16"/>
+        <VerticalStackLayout Padding="20" Spacing="15">
 
-            <Button
-                Command="{Binding FinalizarAulaCommand}"
-                Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}"
-                IsEnabled="{Binding Finalizada, Converter={StaticResource InverseBoolConverter}}" />
+            <!-- Seção principal: título e status -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="{Binding Titulo}" FontSize="24" FontAttributes="Bold"/>
+                <Label Text="{Binding DiaAula, StringFormat='Data: {0:dd/MM/yyyy}'}" FontSize="16"/>
+                <Label Text="{Binding Duracao, StringFormat='Duração: {0:h\\:mm}'}" FontSize="16"/>
+                <Label Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}" 
+                       FontSize="16" TextColor="Green"/>
+            </VerticalStackLayout>
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <Label Text="{Binding Titulo}" FontSize="24" FontAttributes="Bold" HorizontalOptions="StartAndExpand"/>
+                <Label Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}" 
+           FontSize="16" TextColor="Green" HorizontalOptions="End"/>
+            </HorizontalStackLayout>
+
+
+            <!-- Seção descrição -->
+            <Frame Padding="10" BackgroundColor="#f0f0f0" CornerRadius="5">
+                <Label Text="{Binding Descricao}" FontSize="16"/>
+            </Frame>
+
+            <!-- Seção ações -->
+            <VerticalStackLayout Spacing="10">
+                <Button
+                    Command="{Binding FinalizarAulaCommand}"
+                    Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}"
+                    IsEnabled="{Binding Finalizada, Converter={StaticResource InverseBoolConverter}}" />
+            </VerticalStackLayout>
+
+            <!-- Futuras seções: fotos, comentários -->
+            <VerticalStackLayout x:Name="FotosSection" Spacing="10">
+                <!-- placeholder para fotos -->
+            </VerticalStackLayout>
+
+            <VerticalStackLayout x:Name="ComentariosSection" Spacing="10">
+                <!-- placeholder para comentários -->
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
