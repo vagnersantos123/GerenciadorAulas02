@@ -13,7 +13,10 @@ public partial class AulasPage : ContentPage
     {
         InitializeComponent();
         BindingContext = new AulasViewModel();
+
+
     }
+
 
     // Construtor recebendo uma sala (lista aulas só da sala)
     public AulasPage(SalaDeAula sala)

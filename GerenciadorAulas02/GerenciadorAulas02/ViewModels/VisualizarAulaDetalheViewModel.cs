@@ -14,6 +14,8 @@ public class VisualizarAulaDetalheViewModel : BaseViewModel
 
     public ICommand FinalizarAulaCommand { get; } // comando para finalizar a aula
 
+
+
     public VisualizarAulaDetalheViewModel(Aula aula)
     {
        
@@ -39,6 +41,18 @@ public class VisualizarAulaDetalheViewModel : BaseViewModel
     private void FinalizarAula()
     {
         Finalizada = true;
+    }
+
+
+    public string DuracaoFormatada
+    {
+        get
+        {
+            if (aula.Duracao.TotalHours >= 1)
+                return $"{(int)aula.Duracao.TotalHours}h {aula.Duracao.Minutes}min";
+            else
+                return $"{aula.Duracao.Minutes}min";
+        }
     }
 
 }

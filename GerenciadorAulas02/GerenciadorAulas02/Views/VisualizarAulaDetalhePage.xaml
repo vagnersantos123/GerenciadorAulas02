@@ -15,19 +15,42 @@
         <VerticalStackLayout Padding="20" Spacing="15">
 
             <!-- Seção principal: título e status -->
-            <VerticalStackLayout Spacing="5">
-                <Label Text="{Binding Titulo}" FontSize="24" FontAttributes="Bold"/>
-                <Label Text="{Binding DiaAula, StringFormat='Data: {0:dd/MM/yyyy}'}" FontSize="16"/>
-                <Label Text="{Binding Duracao, StringFormat='Duração: {0:h\\:mm}'}" FontSize="16"/>
-                <Label Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}" 
-                       FontSize="16" TextColor="Green"/>
-            </VerticalStackLayout>
-            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                <Label Text="{Binding Titulo}" FontSize="24" FontAttributes="Bold" HorizontalOptions="StartAndExpand"/>
-                <Label Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}" 
-           FontSize="16" TextColor="Green" HorizontalOptions="End"/>
-            </HorizontalStackLayout>
+            <Grid ColumnDefinitions="*, Auto, *" RowDefinitions="Auto, Auto, Auto">
 
+                <!-- Título -->
+                <Label Text="{Binding Titulo}" FontSize="24" FontAttributes="Bold"
+                       Grid.Row="0" Grid.ColumnSpan="3"
+                       HorizontalOptions="StartAndExpand"/>
+
+                <!-- Data -->
+                <Label Text="{Binding DiaAula, StringFormat='Data: {0:dd/MM/yyyy}'}" 
+                       FontSize="16"
+                       Grid.Row="1" Grid.Column="0"/>
+
+                <!-- Duração -->
+                <Label Text="{Binding DuracaoFormatada}" 
+                        FontSize="16"
+                        Grid.Row="1" Grid.Column="1"/>
+
+
+
+                <!-- Status -->
+                <Label Text="{Binding Finalizada, Converter={StaticResource FinalizadaToTextConverter}}" 
+                       FontSize="16" TextColor="Green" 
+                       HorizontalOptions="End"
+                       Grid.Row="1" Grid.Column="2"/>
+
+                <!-- Horário de início -->
+                <Label Text="{Binding HorarioInicio, StringFormat='Início: {0:hh\\:mm}'}"
+                       FontSize="16"
+                       Grid.Row="2" Grid.Column="0"/>
+
+                <!-- Horário de fim -->
+                <Label Text="{Binding HorarioFim, StringFormat='Fim: {0:hh\\:mm}'}"
+                       FontSize="16"
+                       Grid.Row="2" Grid.Column="1"/>
+
+            </Grid>
 
             <!-- Seção descrição -->
             <Frame Padding="10" BackgroundColor="#f0f0f0" CornerRadius="5">

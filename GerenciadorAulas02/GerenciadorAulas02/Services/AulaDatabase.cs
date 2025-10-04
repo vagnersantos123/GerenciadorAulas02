@@ -61,9 +61,9 @@ public class AulaDatabase
             }
 
             // Se Fim não estiver definido, calcula a partir do Inicio + Duracao
-            if (aula.Fim == default && aula.Inicio != default)
+            if (aula.HorarioFim == default && aula.HorarioInicio != default)
             {
-                aula.Fim = aula.Inicio.Add(aula.Duracao);
+                aula.HorarioFim = aula.HorarioInicio.Value.Add(aula.Duracao);
             }
         }
 
@@ -89,10 +89,11 @@ public class AulaDatabase
                     : PreferenciasGlobais.DuracaoPadrao);
             }
 
-            if (aula.Fim == default && aula.Inicio != default)
+            if (aula.HorarioFim == default && aula.HorarioInicio.HasValue)
             {
-                aula.Fim = aula.Inicio.Add(aula.Duracao);
+                aula.HorarioFim = aula.HorarioInicio.Value + aula.Duracao;
             }
+
         }
 
         return aulas;

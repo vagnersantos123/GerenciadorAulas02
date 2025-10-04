@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 
+
 namespace GerenciadorAulas02.Views;
 
 public partial class HomePage : ContentPage
@@ -33,6 +34,11 @@ public partial class HomePage : ContentPage
     private async void OnVisualizarSalasClicked(object sender, EventArgs e)
     {
         await Navigation.PushAsync(new VisualizarSalasPage(App.Database));
+    }
+
+    private async void OnGerenciarAlunosClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new AlunosPage());
     }
 
 }

@@ -13,6 +13,9 @@
         <Button Text="Gerenciar Salas"
             Clicked="OnGerenciarSalasClicked" />
 
+        <Button Text="Gerenciar Alunos"
+                Clicked="OnGerenciarAlunosClicked" />
+
 
         <Button Text="Configurações"
             Clicked="OnConfiguracoesClicked" />

@@ -18,8 +18,8 @@ public class Aula : INotifyPropertyChanged
     private int? materiaId;
     private Materia? materia;
 
-    private DateTime inicio;
-    private DateTime fim;
+    private TimeSpan? horarioInicio;
+    private TimeSpan? horarioFim;
     private DateTime diaAula;
 
     [PrimaryKey, AutoIncrement]
@@ -92,42 +92,74 @@ public class Aula : INotifyPropertyChanged
             if (materia != null && duracao == default)
             {
                 Duracao = TimeSpan.FromMinutes(materia.Duracao);
-                Fim = Inicio.Add(Duracao);
+                HorarioFim = HorarioInicio + Duracao; // soma dois TimeSpan
             }
         }
     }
 
+
     [Ignore]
     public List<string> AlunosPresentes { get; set; } = new List<string>();
+    [Ignore]
+    public string HorarioInicioFormatado
+    => HorarioInicio.HasValue ? HorarioInicio.Value.ToString(@"hh\:mm") : "--:--";
 
-    public DateTime Inicio
+    [Ignore]
+    public string HorarioFimFormatado
+        => HorarioFim.HasValue ? HorarioFim.Value.ToString(@"hh\:mm") : "--:--";
+
+    [Ignore]
+    public string DuracaoFormatada
     {
-        get => inicio;
-        set
+        get
         {
-            inicio = value;
-            OnPropertyChanged(nameof(Inicio));
-
-            // Atualiza fim automaticamente se a duração já estiver definida
-            if (duracao != default)
-                fim = inicio.Add(duracao);
-            OnPropertyChanged(nameof(Fim));
+            if (Duracao.TotalHours >= 1)
+                return $"{(int)Duracao.TotalHours}h {Duracao.Minutes}min";
+            else
+                return $"{Duracao.Minutes}min";
         }
     }
 
-    public DateTime Fim
+
+    [Ignore]
+    public string DataFormatada
+        => DiaAula.ToString("dd/MM/yyyy");
+
+    
+
+
+
+    public TimeSpan? HorarioInicio
     {
-        get => fim;
+        get => horarioInicio;
         set
         {
-            fim = value;
-            OnPropertyChanged(nameof(Fim));
+            horarioInicio = value;
+            OnPropertyChanged(nameof(HorarioInicio));
+            AtualizarDuracao();
+        }
+    }
 
-            // Atualiza duração com base no início e fim
-            duracao = fim - inicio;
+    public TimeSpan? HorarioFim
+    {
+        get => horarioFim;
+        set
+        {
+            horarioFim = value;
+            OnPropertyChanged(nameof(HorarioFim));
+            AtualizarDuracao();
+        }
+    }
+
+    private void AtualizarDuracao()
+    {
+        if (HorarioInicio.HasValue && HorarioFim.HasValue)
+        {
+            Duracao = HorarioFim.Value - HorarioInicio.Value;
             OnPropertyChanged(nameof(Duracao));
         }
     }
+
 
     [Ignore]
     public string Resumo
@@ -135,10 +167,12 @@ public class Aula : INotifyPropertyChanged
         get
         {
             string materiaNome = Materia != null ? Materia.Nome : "Sem matéria";
-            return $"{Titulo} - {materiaNome} ({Tipo}) - {Inicio:dd/MM/yyyy HH:mm} até {Fim:HH:mm}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
+            string inicio = HorarioInicio.HasValue ? HorarioInicio.Value.ToString(@"hh\:mm") : "--:--";
+            string fim = HorarioFim.HasValue ? HorarioFim.Value.ToString(@"hh\:mm") : "--:--";
+            return $"{Titulo} - {materiaNome} ({Tipo}) - {DiaAula:dd/MM/yyyy} {inicio} até {fim}, {Duracao.TotalMinutes} min, {AlunosPresentes.Count} alunos";
         }
     }
-
+    
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged(string nome)
     {

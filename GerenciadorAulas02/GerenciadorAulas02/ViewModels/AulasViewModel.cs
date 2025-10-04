@@ -232,14 +232,15 @@ public class AulasViewModel : BaseViewModelPreferencias
         {
             Titulo = $"{MateriaSelecionada.Nome} - Aula Avulsa",
             Descricao = $"Aula de {MateriaSelecionada.Nome}",
-            Inicio = DateTime.Now,
+            HorarioInicio = DateTime.Now.TimeOfDay,
             Duracao = TimeSpan.FromMinutes(DuracaoMinutos),
-            Fim = DateTime.Now.AddMinutes(DuracaoMinutos),
+            HorarioFim = DateTime.Now.TimeOfDay.Add(TimeSpan.FromMinutes(DuracaoMinutos)),
             Tipo = "Teórica",
             SalaDeAulaId = sala?.Id,
             MateriaId = MateriaSelecionada.Id,
-            DiaAula = DateTime.Now
+            DiaAula = DateTime.Now.Date
         };
+
 
         await App.Database.SaveAulaAsync(aula);
         if (sala != null) await LoadAulasForSala(); else await LoadAulas();
@@ -289,15 +290,16 @@ public class AulasViewModel : BaseViewModelPreferencias
 
         for (int i = 0; i < QuantidadeAulas; i++)
         {
-            var inicio = config.DataInicioAno.AddDays(i * IntervaloDias);
+            var inicio = config.DataInicioAno.AddDays(i * IntervaloDias); // DateTime completo
             var fim = inicio.AddMinutes(DuracaoMinutos);
 
             var aula = new Aula
             {
                 Titulo = $"{MateriaSelecionada.Nome} - Aula {i + 1}",
                 Descricao = $"Aula de {MateriaSelecionada.Nome}",
-                Inicio = inicio,
-                Fim = fim,
+                DiaAula = inicio.Date,                       // só a data
+                HorarioInicio = inicio.TimeOfDay,            // só o horário
+                HorarioFim = fim.TimeOfDay,                  // só o horário
                 Duracao = TimeSpan.FromMinutes(DuracaoMinutos),
                 Tipo = "Teórica",
                 SalaDeAulaId = sala?.Id,
@@ -306,6 +308,7 @@ public class AulasViewModel : BaseViewModelPreferencias
 
             await App.Database.SaveAulaAsync(aula);
         }
+
 
         if (sala != null) await LoadAulasForSala(); else await LoadAulas();
 
