@@ -35,16 +35,16 @@ public sealed class GoogleAuthorization(HttpClient http, ITokenVault vault)
         if (!CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(returnedState), Encoding.UTF8.GetBytes(challenge.State))) throw new InvalidOperationException("Resposta OAuth inválida: state divergente.");
         var fields = new Dictionary<string,string> { ["client_id"] = clientId, ["code"] = code, ["redirect_uri"] = redirect, ["code_verifier"] = challenge.Verifier, ["grant_type"] = "authorization_code" };
         if (!string.IsNullOrEmpty(desktopSecret)) fields["client_secret"] = desktopSecret;
-        await TokenAsync(fields);
+        await TokenAsync(fields,false);
         await vault.SetAsync("google-client-id", clientId);
         if (!string.IsNullOrEmpty(desktopSecret)) await vault.SetAsync("google-desktop-secret", desktopSecret);
     }
-    private async Task<OAuthTokens> TokenAsync(Dictionary<string,string> fields)
+    private async Task<OAuthTokens> TokenAsync(Dictionary<string,string> fields,bool preserveRefresh=true)
     {
         using var response = await http.PostAsync("https://oauth2.googleapis.com/token", new FormUrlEncodedContent(fields));
         if (!response.IsSuccessStatusCode) throw new HttpRequestException($"Não foi possível autorizar a conta Google ({(int)response.StatusCode}).");
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync()); var root = json.RootElement;
-        var previous = await vault.GetAsync("google-tokens"); var old = previous is null ? null : JsonSerializer.Deserialize<OAuthTokens>(previous);
+        var previous = preserveRefresh ? await vault.GetAsync("google-tokens") : null; var old = previous is null ? null : JsonSerializer.Deserialize<OAuthTokens>(previous);
         var tokens = new OAuthTokens(root.GetProperty("access_token").GetString()!, root.TryGetProperty("refresh_token", out var refresh) ? refresh.GetString() : old?.RefreshToken, DateTimeOffset.UtcNow.AddSeconds(root.GetProperty("expires_in").GetInt32()));
         await vault.SetAsync("google-tokens", JsonSerializer.Serialize(tokens)); return tokens;
     }
@@ -67,7 +67,7 @@ public sealed class GoogleAuthorization(HttpClient http, ITokenVault vault)
             using var response = await http.PostAsync("https://oauth2.googleapis.com/revoke", new FormUrlEncodedContent(new Dictionary<string,string> { ["token"] = t.RefreshToken ?? t.AccessToken }));
             if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.BadRequest) throw new HttpRequestException("Não foi possível revogar a autorização. Tente novamente com internet.");
         }
-        foreach (var key in new[] { "google-tokens", "google-client-id", "google-desktop-secret", "drive-folder" }) await vault.RemoveAsync(key);
+        foreach (var key in new[] { "google-tokens", "google-client-id", "google-desktop-secret", "drive-folder", "drive-last-revision", "drive-last-success" }) await vault.RemoveAsync(key);
     }
 }
 public sealed record RemoteBackup(string Id, string Name, long Size, DateTimeOffset CreatedUtc, string Device, int Schema);

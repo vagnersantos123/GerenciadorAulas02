@@ -23,6 +23,7 @@ public sealed class BackupService(JournalStore store)
         {
             using var db = store.Open();
             using (var destination = new SqliteConnection($"Data Source={temp};Pooling=False")) { destination.Open(); db.BackupDatabase(destination); }
+            if(new FileInfo(temp).Length>Limit)throw new InvalidDataException("O banco excede o limite de 256 MB desta versão.");
             var files = new Dictionary<string, byte[]> { ["journal.db"] = await File.ReadAllBytesAsync(temp) };
             long total = files["journal.db"].LongLength;
             foreach (var evidence in JournalStore.Read<Evidence>(db).DistinctBy(e => e.Hash))
@@ -104,7 +105,8 @@ public sealed class BackupService(JournalStore store)
                 if (file.Path != "journal.db" && !(file.Path.StartsWith("attachments/", StringComparison.Ordinal) && file.Path.Length == 76 && file.Path[12..].All(Uri.IsHexDigit))) throw new InvalidDataException("Caminho não permitido.");
                 var entry = zip.GetEntry(file.Path) ?? throw new InvalidDataException("Arquivo ausente.");
                 if (entry.Length != file.Size || file.Size < 0) throw new InvalidDataException("Tamanho inválido.");
-                using var input = entry.Open(); using var content = new MemoryStream(); await input.CopyToAsync(content);
+                using var input = entry.Open(); using var content = new MemoryStream();var buffer=new byte[81920];int read;
+                while((read=await input.ReadAsync(buffer))>0){if(content.Length+read>file.Size||content.Length+read>Limit)throw new InvalidDataException("Conteúdo descompactado excessivo.");await content.WriteAsync(buffer.AsMemory(0,read));}
                 var bytes = content.ToArray(); if (Hash(bytes) != file.Sha256) throw new InvalidDataException("Integridade inválida.");
                 var target = Path.Combine(directory, file.Path); Directory.CreateDirectory(Path.GetDirectoryName(target)!); await File.WriteAllBytesAsync(target, bytes);
             }
