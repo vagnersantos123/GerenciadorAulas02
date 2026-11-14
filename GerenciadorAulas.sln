@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerenciadorAulas.Core", "src\GerenciadorAulas.Core\GerenciadorAulas.Core.csproj", "{06E5148A-BE01-42AB-81F6-D8EDDC8F9DD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerenciadorAulas.App", "src\GerenciadorAulas.App\GerenciadorAulas.App.csproj", "{BBFC70D0-18CF-4BE6-9064-C26CBD51EF4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerenciadorAulas.Tests", "tests\GerenciadorAulas.Tests\GerenciadorAulas.Tests.csproj", "{B221D60F-E31E-45D4-B0AA-CD593C2525C8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06E5148A-BE01-42AB-81F6-D8EDDC8F9DD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06E5148A-BE01-42AB-81F6-D8EDDC8F9DD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06E5148A-BE01-42AB-81F6-D8EDDC8F9DD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06E5148A-BE01-42AB-81F6-D8EDDC8F9DD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBFC70D0-18CF-4BE6-9064-C26CBD51EF4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBFC70D0-18CF-4BE6-9064-C26CBD51EF4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBFC70D0-18CF-4BE6-9064-C26CBD51EF4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBFC70D0-18CF-4BE6-9064-C26CBD51EF4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B221D60F-E31E-45D4-B0AA-CD593C2525C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B221D60F-E31E-45D4-B0AA-CD593C2525C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B221D60F-E31E-45D4-B0AA-CD593C2525C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B221D60F-E31E-45D4-B0AA-CD593C2525C8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
