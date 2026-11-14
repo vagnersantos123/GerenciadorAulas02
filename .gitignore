@@ -78,3 +78,16 @@ package-lock.json
 # Segredos locais (se existirem)
 secrets.json
 appsettings.Development.json
+
+# Dados familiares, backups e credenciais locais
+*.db
+*.db-shm
+*.db-wal
+*.db3
+*.sqlite
+*.sqlite3
+*.gabackup
+client_secret*.json
+credentials.json
+.env
+artifacts/
