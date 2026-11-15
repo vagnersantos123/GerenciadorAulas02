@@ -3,6 +3,7 @@
     <TargetFrameworks>net10.0-android</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) Or '$(BuildWindows)' == 'true'">net10.0-android;net10.0-windows10.0.19041.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(BuildWindowsOnly)' == 'true'">net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildAndroidOnly)' == 'true'">net10.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType><RootNamespace>GerenciadorAulas.App</RootNamespace>
     <UseMaui>true</UseMaui><SingleProject>true</SingleProject>
     <ApplicationTitle>GerenciadorAulas</ApplicationTitle><ApplicationId>br.com.gerenciadoraulas.app</ApplicationId>

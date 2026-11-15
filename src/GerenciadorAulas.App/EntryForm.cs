@@ -17,6 +17,7 @@ public sealed class EntryForm : ContentPage
         else{var c=new Microsoft.Maui.Controls.Entry {Text=value};fields.Add(c);apply.Add(()=>set(c.Text??""));}
     }
     private void Number(string label,int value,Action<int> set)=>Text(label,value.ToString(),v=>{if(!int.TryParse(v,out var n))throw new ArgumentException(label+": informe um número inteiro.");set(n);});
+    private void OptionalMinutes(string label,int? value,Action<int?> set)=>Text(label,value?.ToString()??"",v=>{if(string.IsNullOrWhiteSpace(v)){set(null);return;}if(!int.TryParse(v,out var n)||n<0)throw new ArgumentException(label+": informe minutos inteiros não negativos ou deixe em branco.");set(n);});
     private void Date(string label,DateOnly value,Action<DateOnly> set){Caption(label);var c=new DatePicker {Date=value.ToDateTime(TimeOnly.MinValue)};fields.Add(c);apply.Add(()=>set(DateOnly.FromDateTime(c.Date??DateTime.Today)));}
     private void Toggle(string label,bool value,Action<bool> set){Caption(label);var c=new Switch {IsToggled=value};fields.Add(c);apply.Add(()=>set(c.IsToggled));}
     private Picker Pick<T>(string label,List<T> choices,T? selected,Func<T,string> name,Action<T> set) where T:class
@@ -25,6 +26,56 @@ public sealed class EntryForm : ContentPage
         apply.Add(()=>{if(p.SelectedIndex<0)throw new ArgumentException("Selecione: "+label);set(choices[p.SelectedIndex]);});return p;
     }
     private void Days(DayOfWeek[] days,Action<DayOfWeek[]> set)=>Text("Dias da semana (0 domingo, 1 segunda … 6 sábado)",string.Join(",",days.Select(d=>(int)d)),v=>set(v.Split(',',StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries).Select(x=>int.TryParse(x,out var n)&&n is >=0 and <=6?(DayOfWeek)n:throw new ArgumentException("Dia inválido.")).Distinct().ToArray()));
+    private void StudyLessons(StudySession session, List<Subject> subjects, List<Lesson> lessons, List<StudySession> sessions, List<Difficulty> difficulties, SessionTimeFields timeFields, List<PlannedLesson> plans)
+    {
+        var selection = new LessonSelection(lessons, sessions, session.SubjectId, session.LessonIds);
+        Caption("Matéria");
+        var subject = new Picker { Title = "Escolha a matéria", ItemsSource = subjects.Select(s => s.Name).ToList(), SelectedIndex = subjects.FindIndex(s => s.Id == session.SubjectId), IsEnabled = !sessions.Any(s => s.Id == session.Id) };
+        fields.Add(subject);
+        var summary = new Label { TextColor = Color.FromArgb("#203B34"), FontSize = 15 };
+        var select = new Button();
+        var difficulty = new Picker { Title = "Sem reforço" };
+        var choices = new List<Difficulty>();
+        void UpdateSummary()
+        {
+            var chosen = selection.Selected;
+            timeFields.SetSuggestion(SessionTimeComparison.Suggest(plans, selection.SelectedIds));
+            select.Text = $"Selecionar / revisar lições ({chosen.Count})";
+            select.IsEnabled = subject.SelectedIndex >= 0;
+            summary.Text = chosen.Count == 0 ? "Nenhuma lição selecionada." : string.Join("\n", chosen.Take(5).Select(o => o.Caption + " · " + o.Status)) +
+                (chosen.Count > 5 ? $"\nMais {chosen.Count - 5} selecionada(s). Abra a seleção para revisar todas." : "");
+        }
+        void LoadDifficulties(string? selectedId)
+        {
+            choices = difficulties.Where(d => d.SubjectId == selection.SubjectId).ToList();
+            difficulty.ItemsSource = new[] { "Sem reforço" }.Concat(choices.Select(d => d.Theme)).ToList();
+            difficulty.SelectedIndex = choices.FindIndex(d => d.Id == selectedId) + 1;
+        }
+        async Task OpenSelectionAsync()
+        {
+            if (subject.SelectedIndex < 0) throw new ArgumentException("Escolha a matéria primeiro.");
+            var draft = new LessonSelection(lessons, sessions, selection.SubjectId, selection.SelectedIds);
+            await Navigation.PushModalAsync(new NavigationPage(new LessonSelectionPage(draft, subjects[subject.SelectedIndex].Name, chosen => { selection = chosen; UpdateSummary(); })));
+        }
+        select.Command = vm.Command(OpenSelectionAsync);
+        subject.SelectedIndexChanged += async (_, _) =>
+        {
+            selection.ChangeSubject(subject.SelectedIndex < 0 ? "" : subjects[subject.SelectedIndex].Id);
+            LoadDifficulties(null); UpdateSummary();
+            if (subject.SelectedIndex >= 0) await vm.Command(OpenSelectionAsync).ExecuteAsync(null);
+        };
+        Caption("Lições do estudo"); fields.Add(select); fields.Add(summary);
+        fields.Add(new Label { Text = "Você pode estudar a mesma lição em vários dias. Salvar uma sessão não conclui as lições.", TextColor = Color.FromArgb("#52645F") });
+        Caption("Reforço de dificuldade (opcional)"); fields.Add(difficulty);
+        LoadDifficulties(session.DifficultyId); UpdateSummary();
+        apply.Add(() =>
+        {
+            if (subject.SelectedIndex < 0) throw new ArgumentException("Escolha a matéria.");
+            session.SubjectId = selection.SubjectId;
+            session.LessonIds = selection.SelectedIds;
+            session.DifficultyId = difficulty.SelectedIndex <= 0 ? null : choices[difficulty.SelectedIndex - 1].Id;
+        });
+    }
     public async Task PrepareAsync(Func<Task> saved)
     {
         var store=services.GetRequiredService<JournalStore>();var context=services.GetRequiredService<SelectionContext>();
@@ -44,16 +95,18 @@ public sealed class EntryForm : ContentPage
                 Pick("Aluno",students,students.Find(s=>s.Id==y.StudentId),s=>s.Name,s=>y.StudentId=s.Id);Text("Nome do ano letivo",y.Name,v=>y.Name=v);Date("Início",y.Start,v=>y.Start=v);Date("Término",y.End,v=>y.End=v);Days(y.StudyDays,v=>y.StudyDays=v);
                 Text("Férias, feriados e pausas — uma linha por intervalo: AAAA-MM-DD | AAAA-MM-DD | motivo",string.Join("\n",y.Breaks.Select(b=>$"{b.Start:yyyy-MM-dd} | {b.End:yyyy-MM-dd} | {b.Reason}")),v=>y.Breaks=v.Split('\n',StringSplitOptions.RemoveEmptyEntries).Select(line=>{var parts=line.Split('|',StringSplitOptions.TrimEntries);if(parts.Length!=3||!DateOnly.TryParseExact(parts[0],"yyyy-MM-dd",out var start)||!DateOnly.TryParseExact(parts[1],"yyyy-MM-dd",out var end))throw new ArgumentException("Intervalo de pausa inválido.");return new DateRange(start,end,parts[2]);}).ToList(),true);break;
             case Subject s:
-                Pick("Ano letivo",years.Where(y=>y.StudentId==context.StudentId).ToList(),years.Find(y=>y.Id==s.YearId),y=>y.Name,y=>s.YearId=y.Id);Text("Matéria",s.Name,v=>s.Name=v);Number("Quantidade de lições",s.LessonCount,v=>s.LessonCount=v);Number("Lições por dia de estudo",s.LessonsPerDay,v=>s.LessonsPerDay=v);Days(s.StudyDays,v=>s.StudyDays=v);break;
+                Pick("Ano letivo",years.Where(y=>y.StudentId==context.StudentId).ToList(),years.Find(y=>y.Id==s.YearId),y=>y.Name,y=>s.YearId=y.Id);Text("Matéria",s.Name,v=>s.Name=v);Number("Quantidade de lições",s.LessonCount,v=>s.LessonCount=v);Number("Lições por dia de estudo",s.LessonsPerDay,v=>s.LessonsPerDay=v);OptionalMinutes("Estimativa por lição para gerar o planejamento (minutos, opcional)",s.EstimatedLessonMinutes,v=>s.EstimatedLessonMinutes=v);Days(s.StudyDays,v=>s.StudyDays=v);break;
             case Lesson l:Caption("Lição "+l.Number);Text("Título ou tema",l.Title,v=>l.Title=v);Text("Observações",l.Notes,v=>l.Notes=v,true);Toggle("Lição concluída (decisão explícita)",l.Completed,v=>l.Completed=v);break;
             case PlannedLesson p:
-                Caption($"Data original preservada: {p.OriginalDate:dd/MM/yyyy}");Date("Nova data confirmada",p.RevisedDate??p.OriginalDate,v=>p.RevisedDate=v);break;
+                Caption($"Data original preservada: {p.OriginalDate:dd/MM/yyyy}");Date("Nova data confirmada",p.RevisedDate??p.OriginalDate,v=>p.RevisedDate=v);
+                if(p.EstimatedMinutes is int planned)Caption($"Tempo original preservado: {planned} min");
+                else OptionalMinutes("Tempo original (minutos, opcional; preservado após salvar)",p.EstimatedMinutes,v=>p.EstimatedMinutes=v);
+                OptionalMinutes("Estimativa ajustada (minutos, opcional)",p.RevisedEstimatedMinutes,v=>p.RevisedEstimatedMinutes=v);break;
             case StudySession s:
-                SubjectChoice(s.SubjectId,v=>s.SubjectId=v);Date("Data real",s.Date,v=>s.Date=v);LessonNumbers(s.SubjectId,s.LessonIds,()=>s.SubjectId,v=>s.LessonIds=v);
-                Text("Horário inicial (HH:mm, opcional)",s.StartTime?.ToString("HH:mm")??"",v=>s.StartTime=string.IsNullOrWhiteSpace(v)?null:TimeOnly.TryParseExact(v,"HH:mm",out var t)?t:throw new ArgumentException("Horário inválido."));
-                Number("Duração em minutos",s.Minutes,v=>s.Minutes=v);Number("Exercícios",s.Exercises,v=>s.Exercises=v);Number("Acertos",s.Correct,v=>s.Correct=v);
-                var difficulties=await store.AllAsync<Difficulty>();var choices=difficulties.Where(d=>available.Any(a=>a.Id==d.SubjectId)).ToList();
-                Caption("Reforço de dificuldade (opcional)");var dPicker=new Picker {Title="Sem reforço"};dPicker.Items.Add("Sem reforço");foreach(var d in choices)dPicker.Items.Add(d.Theme);dPicker.SelectedIndex=choices.FindIndex(d=>d.Id==s.DifficultyId)+1;fields.Add(dPicker);apply.Add(()=>s.DifficultyId=dPicker.SelectedIndex<=0?null:choices[dPicker.SelectedIndex-1].Id);
+                var registeredStudies=await store.AllAsync<StudySession>();
+                var timeFields=new SessionTimeFields(s,!registeredStudies.Any(existing=>existing.Id==s.Id));
+                StudyLessons(s,available,lessons,registeredStudies,await store.AllAsync<Difficulty>(),timeFields,await store.AllAsync<PlannedLesson>());
+                fields.Add(timeFields);apply.Add(()=>timeFields.Apply(s));Number("Exercícios",s.Exercises,v=>s.Exercises=v);Number("Acertos",s.Correct,v=>s.Correct=v);
                 Toggle("Sessão encerrada (não conclui as lições)",s.SessionFinished,v=>s.SessionFinished=v);Text("Observações",s.Notes,v=>s.Notes=v,true);break;
             case Difficulty d:
                 SubjectChoice(d.SubjectId,v=>d.SubjectId=v);Date("Identificação",d.Date,v=>d.Date=v);Text("Tema",d.Theme,v=>d.Theme=v);LessonNumbers(d.SubjectId,d.LessonIds,()=>d.SubjectId,v=>d.LessonIds=v);Text("Dificuldade",d.Description,v=>d.Description=v,true);

@@ -29,6 +29,7 @@ public sealed record Subject : Entry
     public string Name { get; set; } = "";
     public int LessonCount { get; set; } = 180;
     public int LessonsPerDay { get; set; } = 1;
+    public int? EstimatedLessonMinutes { get; set; }
     public DayOfWeek[] StudyDays { get; set; } = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday];
     public override string ParentId => YearId;
 }
@@ -46,6 +47,8 @@ public sealed record PlannedLesson : Entry
     public string LessonId { get; set; } = "";
     public DateOnly OriginalDate { get; set; }
     public DateOnly? RevisedDate { get; set; }
+    public int? EstimatedMinutes { get; set; }
+    public int? RevisedEstimatedMinutes { get; set; }
     public override string ParentId => LessonId;
 }
 public sealed record StudySession : Entry
@@ -53,7 +56,11 @@ public sealed record StudySession : Entry
     public string SubjectId { get; set; } = "";
     public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Today);
     public TimeOnly? StartTime { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public TimeOnly? EndTime { get; set; }
     public int Minutes { get; set; }
+    public int? EstimatedMinutes { get; set; }
+    public int? PlannedMinutes { get; set; }
     public int Exercises { get; set; }
     public int Correct { get; set; }
     public string Notes { get; set; } = "";

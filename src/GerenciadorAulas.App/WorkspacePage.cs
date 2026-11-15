@@ -54,10 +54,12 @@ public sealed class WorkspacePage : ContentPage
                 Note("A geração preserva datas originais. Ajustes de data só ocorrem após edição confirmada. Ocorrências não mudam o calendário automaticamente.");
                 foreach(var s in subjects.Where(s=>s.YearId==context.YearId))body.Add(Action("Gerar planejamento · "+s.Name,async()=>{await services.GetRequiredService<EducationService>().GeneratePlanAsync(s.Id);await ReloadAsync();}));
                 var plans=(await store.AllAsync<PlannedLesson>()).Where(p=>lessons.Any(l=>l.Id==p.LessonId&&InYear(l.SubjectId))).OrderBy(p=>p.OriginalDate).ToList();
-                Note($"{plans.Count} lições planejadas. Exibindo até 500 por página nesta versão.");foreach(var p in plans.Take(500)){var done=lessons.First(l=>l.Id==p.LessonId).Completed;Row(p,LessonName(p.LessonId),$"Original: {p.OriginalDate:dd/MM/yyyy} · Ajustada: {p.RevisedDate?.ToString("dd/MM/yyyy")??"—"} · {(done?"Concluída":(p.RevisedDate??p.OriginalDate)<DateOnly.FromDateTime(DateTime.Today)?"Atrasada":"Pendente")}");}break;
+                var plannedStudies=await store.AllAsync<StudySession>();
+                Note("O andamento usa os estudos registrados. Adiantamento compara o primeiro estudo à data prevista; não indica conclusão automática.");
+                Note($"{plans.Count} lições planejadas. Exibindo até 500 nesta versão.");foreach(var p in plans.Take(500)){var lesson=lessons.First(l=>l.Id==p.LessonId);Row(p,LessonName(p.LessonId),$"Original: {p.OriginalDate:dd/MM/yyyy} · Ajustada: {p.RevisedDate?.ToString("dd/MM/yyyy")??"—"} · {LessonPlanning.Describe(lesson,p,plannedStudies,DateOnly.FromDateTime(DateTime.Today))}\nTempo original: {p.EstimatedMinutes?.ToString()??"não informado"} min · ajustado: {p.RevisedEstimatedMinutes?.ToString()??"—"} min");}break;
             case "Registrar estudo":case "Histórico":
                 body.Add(Action("Registrar sessão de estudo / reforço",()=>EditAsync(new StudySession {SubjectId=subjects.FirstOrDefault(s=>s.YearId==context.YearId)?.Id??""})));
-                foreach(var s in (await store.AllAsync<StudySession>()).Where(s=>InYear(s.SubjectId)).OrderByDescending(s=>s.Date))Row(s,$"{s.Date:dd/MM/yyyy} · {SubjectName(s.SubjectId)}",$"Lições {string.Join(", ",lessons.Where(l=>s.LessonIds.Contains(l.Id)).Select(l=>l.Number))} · {s.Minutes} min · {s.Correct}/{s.Exercises} acertos{(s.DifficultyId is null?"":" · Reforço")}\n{s.Notes}");break;
+                foreach(var s in (await store.AllAsync<StudySession>()).Where(s=>InYear(s.SubjectId)).OrderByDescending(s=>s.Date))Row(s,$"{s.Date:dd/MM/yyyy} · {SubjectName(s.SubjectId)}",$"Lições {string.Join(", ",lessons.Where(l=>s.LessonIds.Contains(l.Id)).Select(l=>l.Number))} · {s.Minutes} min · {s.Correct}/{s.Exercises} acertos{(s.DifficultyId is null?"":" · Reforço")}\n{SessionTiming.Describe(s)}\n{SessionTimeComparison.Describe(s)}\n{s.Notes}");break;
             case "Dificuldades e reforços":
                 body.Add(Action("Registrar dificuldade",()=>EditAsync(new Difficulty {SubjectId=subjects.FirstOrDefault(s=>s.YearId==context.YearId)?.Id??""})));
                 foreach(var d in (await store.AllAsync<Difficulty>()).Where(d=>InYear(d.SubjectId))) {Row(d,d.Theme,$"{SubjectName(d.SubjectId)} · {d.Status}\n{d.Description}");body.Add(Action("Registrar reforço · "+d.Theme,()=>EditAsync(new StudySession {SubjectId=d.SubjectId,DifficultyId=d.Id,LessonIds=d.LessonIds})));}break;
@@ -79,7 +81,7 @@ public sealed class WorkspacePage : ContentPage
             default:
                 var sessions=(await store.AllAsync<StudySession>()).Where(s=>InYear(s.SubjectId)).ToArray();var ownLessons=lessons.Where(l=>InYear(l.SubjectId)).ToArray();
                 Note("Organize o que foi planejado e registre o que realmente aconteceu. Os dados continuam disponíveis sem internet.");
-                Note($"{students.Count} alunos · {subjects.Count(s=>s.YearId==context.YearId)} matérias neste ano\n{ownLessons.Count(l=>l.Completed)} de {ownLessons.Length} lições concluídas · {sessions.Length} sessões · {sessions.Sum(s=>s.Minutes)} minutos");
+                Note($"{students.Count} alunos · {subjects.Count(s=>s.YearId==context.YearId)} matérias neste ano\n{ownLessons.Count(l=>l.Completed)} de {ownLessons.Length} lições concluídas · {sessions.Length} sessões · {sessions.Sum(s=>(long)s.Minutes)} minutos");
                 body.Add(Action("Novo estudo",()=>EditAsync(new StudySession {SubjectId=subjects.FirstOrDefault(s=>s.YearId==context.YearId)?.Id??""})));Note("Comece pelo menu Alunos. Depois, configure Anos letivos e Matérias e lições.");break;
         }
         body.Add(rows);
