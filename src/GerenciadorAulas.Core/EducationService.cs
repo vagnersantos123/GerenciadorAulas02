@@ -18,12 +18,12 @@ public sealed class EducationService(JournalStore store)
             case Student s: Require(!string.IsNullOrWhiteSpace(s.Name), "Informe o nome do aluno."); break;
             case SchoolYear y:
                 Parent<Student>(db, tx, y.StudentId); Require(!string.IsNullOrWhiteSpace(y.Name) && y.End >= y.Start, "Ano letivo ou datas inválidos.");
-                Require(y.StudyDays.Length > 0 && y.StudyDays.All(d => Enum.IsDefined(d)), "Selecione dias de estudo válidos.");
+                y.StudyDays = StudyWeek.Normalize(y.StudyDays);
                 Require(y.Breaks.All(b => b.End >= b.Start), "Pausa com datas inválidas."); break;
             case Subject s:
                 Parent<SchoolYear>(db, tx, s.YearId);
                 Require(!string.IsNullOrWhiteSpace(s.Name) && s.LessonCount is > 0 and <= 5000 && s.LessonsPerDay is > 0 and <= 50, "Matéria, quantidade ou ritmo inválidos.");
-                Require(s.StudyDays.Length > 0 && s.StudyDays.All(d => Enum.IsDefined(d)), "Selecione dias válidos.");
+                s.StudyDays = StudyWeek.Normalize(s.StudyDays);
                 Require(s.EstimatedLessonMinutes is null or >= 0, "Estimativa inválida.");
                 var old = JournalStore.Find(db, tx, s.Id) as Subject;
                 Require(old is null || s.LessonCount >= old.LessonCount, "Não reduza a quantidade: há histórico de lições.");

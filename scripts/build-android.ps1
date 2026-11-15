@@ -1,6 +1,7 @@
-param([string]$ToolsRoot = (Join-Path $env:LOCALAPPDATA 'GA003'))
+param([string]$ToolsRoot = (Join-Path $env:LOCALAPPDATA 'GA003'), [string]$OutputName = 'GerenciadorAulas-V004-Debug.apk')
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path -Parent $PSScriptRoot
+if ([IO.Path]::GetFileName($OutputName) -ne $OutputName -or ! $OutputName.EndsWith('.apk', [StringComparison]::OrdinalIgnoreCase)) { throw 'OutputName deve ser somente um nome de arquivo .apk.' }
 $dotnet = Join-Path $ToolsRoot 'net10\dotnet.exe'
 $android = Join-Path $ToolsRoot 'android'
 $jdk = Get-ChildItem -LiteralPath (Join-Path $ToolsRoot 'jdk21') -Directory | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'bin\java.exe') } | Select-Object -First 1
@@ -18,7 +19,7 @@ try {
     if (!(Test-Path -LiteralPath $apk)) { throw 'A compilacao terminou sem produzir o APK assinado esperado.' }
     $outputDirectory = Join-Path $repository 'artifacts\apk'
     New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
-    $output = Join-Path $outputDirectory 'GerenciadorAulas-V003-Debug.apk'
+    $output = Join-Path $outputDirectory $OutputName
     Copy-Item -LiteralPath $apk -Destination $output -Force
     Get-Item -LiteralPath $output | Select-Object FullName, Length
     Get-FileHash -LiteralPath $output -Algorithm SHA256

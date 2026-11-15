@@ -25,6 +25,7 @@ public sealed record SchoolYear : Entry
 public sealed record DateRange(DateOnly Start, DateOnly End, string Reason);
 public sealed record Subject : Entry
 {
+    public string? CatalogItemId { get; set; }
     public string YearId { get; set; } = "";
     public string Name { get; set; } = "";
     public int LessonCount { get; set; } = 180;
@@ -33,6 +34,13 @@ public sealed record Subject : Entry
     public DayOfWeek[] StudyDays { get; set; } = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday];
     public override string ParentId => YearId;
 }
+public sealed record SubjectCatalog : Entry
+{
+    public const string RecordId = "subject-catalog-v1";
+    public List<CatalogSubject> Items { get; set; } = [];
+    public override string? ParentId => null;
+}
+public sealed record CatalogSubject(string Id, string Name);
 public sealed record Lesson : Entry
 {
     public string SubjectId { get; set; } = "";

@@ -25,7 +25,7 @@ public sealed class EntryForm : ContentPage
         Caption(label);var p=new Picker {Title=label};foreach(var c in choices)p.Items.Add(name(c));p.SelectedIndex=selected is null ? -1 : choices.IndexOf(selected);fields.Add(p);
         apply.Add(()=>{if(p.SelectedIndex<0)throw new ArgumentException("Selecione: "+label);set(choices[p.SelectedIndex]);});return p;
     }
-    private void Days(DayOfWeek[] days,Action<DayOfWeek[]> set)=>Text("Dias da semana (0 domingo, 1 segunda … 6 sábado)",string.Join(",",days.Select(d=>(int)d)),v=>set(v.Split(',',StringSplitOptions.TrimEntries|StringSplitOptions.RemoveEmptyEntries).Select(x=>int.TryParse(x,out var n)&&n is >=0 and <=6?(DayOfWeek)n:throw new ArgumentException("Dia inválido.")).Distinct().ToArray()));
+    private void Days(DayOfWeek[] days,Action<DayOfWeek[]> set) { Caption("Dias da semana para estudo"); var selection=new StudyDaysField(days); fields.Add(selection); apply.Add(()=>set(selection.SelectedDays)); }
     private void StudyLessons(StudySession session, List<Subject> subjects, List<Lesson> lessons, List<StudySession> sessions, List<Difficulty> difficulties, SessionTimeFields timeFields, List<PlannedLesson> plans)
     {
         var selection = new LessonSelection(lessons, sessions, session.SubjectId, session.LessonIds);

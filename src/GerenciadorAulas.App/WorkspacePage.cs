@@ -48,7 +48,8 @@ public sealed class WorkspacePage : ContentPage
                 Note("Cadastre o aluno primeiro. Configure os dias de estudo e todos os intervalos sem aula, incluindo férias de julho e feriados.");
                 body.Add(Action("Adicionar ano letivo",()=>EditAsync(new SchoolYear {StudentId=context.StudentId??"",Name=DateTime.Today.Year.ToString()})));foreach(var y in ownYears)Row(y,y.Name,$"{y.Start:dd/MM/yyyy} a {y.End:dd/MM/yyyy} · {y.Breaks.Count} pausas");break;
             case "Matérias e lições":
-                body.Add(Action("Adicionar matéria e gerar lições",()=>EditAsync(new Subject {YearId=context.YearId??""})));
+                body.Add(Action("Selecionar matérias do catálogo",()=>OpenCatalogAsync(true)));
+                body.Add(Action("Criar matéria personalizada",()=>EditAsync(new Subject {YearId=context.YearId??"",StudyDays=years.Find(y=>y.Id==context.YearId)?.StudyDays.ToArray()??new SchoolYear().StudyDays})));
                 foreach(var s in subjects.Where(s=>s.YearId==context.YearId)){Row(s,s.Name,$"{lessons.Count(l=>l.SubjectId==s.Id&&l.Completed)}/{s.LessonCount} lições concluídas");body.Add(Action("Lições de "+s.Name,()=>ShowLessonsAsync(s)));}break;
             case "Planejamento":
                 Note("A geração preserva datas originais. Ajustes de data só ocorrem após edição confirmada. Ocorrências não mudam o calendário automaticamente.");
@@ -75,6 +76,7 @@ public sealed class WorkspacePage : ContentPage
                 foreach(var e in (await store.AllAsync<Evidence>()).Where(e=>scoped.Contains(e.RecordId)))Row(e,e.FileName,$"{e.Size/1024d:F1} KB{(e.Sensitive?" · Sensível":"")}");break;
             case "Relatórios":BuildReports();break;
             case "Configurações":
+                body.Add(Action("Editar e organizar catálogo de matérias",()=>OpenCatalogAsync(false)));
                 Note("Armazenamento local privado: SQLite e arquivos separados. A desinstalação pode apagar os dados. Exporte backups regularmente. O banco antigo não é migrado automaticamente; mantenha uma cópia dele.");
                 Note("Versão 1.0 · esquema "+JournalStore.SchemaVersion+" · Interface em português brasileiro. Use o menu para cadastrar aluno → ano letivo → matéria → estudos.");body.Add(Action("Atualizar tela",ReloadAsync));break;
             case "Backup Google Drive":await BuildBackupAsync();break;
@@ -94,6 +96,13 @@ public sealed class WorkspacePage : ContentPage
     private async Task EditAsync(DomainEntry entry)
     {
         var page=new EntryForm(services,entry);await page.PrepareAsync(ReloadAsync);await Navigation.PushModalAsync(new NavigationPage(page));
+    }
+    private async Task OpenCatalogAsync(bool import)
+    {
+        var year=years.Find(y=>y.Id==context.YearId);
+        if(import&&year is null)throw new ArgumentException("Cadastre e selecione um ano letivo antes de adicionar matérias.");
+        var page=new SubjectCatalogPage(store,import?year!.Id:null,year?.StudyDays??new SchoolYear().StudyDays,ReloadAsync);
+        await page.PrepareAsync();await Navigation.PushModalAsync(new NavigationPage(page));
     }
     private async Task ShowLessonsAsync(Subject subject)
     {

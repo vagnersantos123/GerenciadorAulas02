@@ -12,7 +12,7 @@ public sealed class JournalStore(string directory)
     internal SemaphoreSlim Gate { get; } = new(1, 1);
     public event EventHandler? Changed;
     private bool initialized;
-    internal static readonly Dictionary<string, Type> Types = new[] { typeof(Student), typeof(SchoolYear), typeof(Subject), typeof(Lesson), typeof(PlannedLesson), typeof(StudySession), typeof(Difficulty), typeof(Activity), typeof(Occurrence), typeof(Evidence) }.ToDictionary(t => t.Name);
+    internal static readonly Dictionary<string, Type> Types = new[] { typeof(Student), typeof(SchoolYear), typeof(Subject), typeof(Lesson), typeof(PlannedLesson), typeof(StudySession), typeof(Difficulty), typeof(Activity), typeof(Occurrence), typeof(Evidence), typeof(SubjectCatalog) }.ToDictionary(t => t.Name);
 
     internal SqliteConnection Open()
     {
