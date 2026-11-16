@@ -1,4 +1,4 @@
-param([string]$ToolsRoot = (Join-Path $env:LOCALAPPDATA 'GA003'), [string]$OutputName = 'GerenciadorAulas-V004-Debug.apk')
+param([string]$ToolsRoot = (Join-Path $env:LOCALAPPDATA 'GA003'), [string]$OutputName = 'GerenciadorAulas-V005-Debug.apk')
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path -Parent $PSScriptRoot
 if ([IO.Path]::GetFileName($OutputName) -ne $OutputName -or ! $OutputName.EndsWith('.apk', [StringComparison]::OrdinalIgnoreCase)) { throw 'OutputName deve ser somente um nome de arquivo .apk.' }

@@ -12,6 +12,10 @@ public static class MauiProgram
         builder.Services.AddSingleton<SelectionContext>();
         builder.Services.AddSingleton<HttpClient>();
         builder.Services.AddSingleton<ITokenVault, PlatformTokenVault>();
+#if ANDROID
+        builder.Services.AddSingleton<INativeGoogleAuthorization, AndroidGoogleAuthorization>();
+#endif
+        builder.Services.AddSingleton<GoogleOnboarding>();
         builder.Services.AddSingleton<GoogleAuthorization>();
         builder.Services.AddSingleton<GoogleDriveClient>();
         builder.Services.AddSingleton<IBackupDrive>(s => s.GetRequiredService<GoogleDriveClient>());

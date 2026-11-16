@@ -4,22 +4,21 @@ Organização familiar dos estudos, com funcionamento local offline. Reconstruç
 
 ## Estado desta entrega
 
-- Núcleo compilado e **19 testes automatizados aprovados**, com SQLite temporário e dados fictícios.
-- Aplicativo Android compilado; APK de depuração instalável gerado. Abertura das telas e testes em dispositivo real ainda pendentes.
-- Alunos, anos letivos, matérias com lições numeradas, planejamento, estudos, dificuldades, reforços, atividades, ocorrências e anexos implementados na interface.
-- Backup local criptografado e restauração com integridade e cópia de segurança testados automaticamente.
-- Relatórios HTML imprimíveis. Não há geração direta de PDF; no Windows, use a impressão do navegador para salvar como PDF.
-- Cliente Drive de criação de pastas, upload verificado, listagem e download implementado e testado por HTTP simulado. Login desktop com PKCE implementado, mas sem credenciais reais para validar.
-- **Login Google no Android ainda não implementado**: exige adaptação nativa às regras atuais do Google Identity Services. Não basta preencher um Client ID. Não há login fictício nem uso incorreto de callback desktop no Android.
-- Configuração Windows sem MSIX incluída. Compilação/inicialização Windows não certificadas neste host Linux; veja [validação](docs/VALIDACAO.md).
-
+- V002–V004 consolidadas e publicadas em `main` (`9c4a7ef`); V004 validada manualmente no Android pelo proprietário.
+- V005 em desenvolvimento local para revisão, sem commit/push. **79 testes automatizados aprovados**, preservando os 64 anteriores, com bancos descartáveis e HTTP simulado.
+- Planejamento confiável, seleção visual de lições, horários e estimativas, catálogo editável de matérias e seleção visual dos dias no Windows e Android.
+- Backup local criptografado e restauração com integridade, confirmação e cópia de segurança.
+- Google opcional: PKCE no Windows e autorização nativa Google Identity Services no Android; funcionamento offline preservado. **Login, upload, listagem e restauração Android → Windows confirmados pelo proprietário. Windows → Android permanece pendente de teste manual.**
+- Backup Drive manual e automático com consentimento, versões, metadados e integridade. Não há sincronização simultânea nem mesclagem automática.
+- Relatórios HTML imprimíveis; no Windows, use a impressão do navegador para salvar como PDF.
+- Consulte [configuração Google e testes reais pendentes](docs/GOOGLE_DRIVE.md) e [relatório V005](docs/VALIDACAO_005.md).
 ## Primeiro uso
 
-1. Abra o menu **Alunos**, adicione o aluno e salve.
+1. Escolha conectar com Google ou continuar sem conta. Depois, em **Alunos**, adicione o aluno e salve.
 2. Em **Anos letivos**, configure datas, dias da semana, feriados e férias (inclua julho, se aplicável).
-3. Em **Matérias e lições**, crie matérias com quantidade e frequência. As lições serão geradas em uma transação.
+3. Em **Matérias e lições**, selecione matérias do catálogo ou crie uma personalizada, com quantidade e frequência individuais. Edite o catálogo nas Configurações.
 4. Em **Planejamento**, gere as datas. Falta de capacidade no calendário não gera um plano parcial. Uma segunda geração não sobrescreve o original.
-5. Em **Registrar estudo**, selecione matéria e números de lições separados por vírgulas. A mesma lição pode aparecer em vários dias; uma sessão pode conter várias lições.
+5. Em **Registrar estudo**, selecione visualmente a matéria e uma ou várias lições. A mesma lição pode aparecer em vários dias; uma sessão pode conter várias lições.
 6. Marque a conclusão explicitamente em **Matérias e lições → Lições → editar**. Encerrar a sessão não conclui lições.
 7. Registre dificuldades e use **Registrar reforço** para manter o vínculo. A superação não apaga o histórico.
 8. No menu **Opções** de estudos, atividades, dificuldades e ocorrências, use **Anexar arquivo**. Não são exigidas permissões amplas de armazenamento Android.
@@ -32,7 +31,7 @@ As telas usam o aluno e o ano selecionados no cabeçalho. Exclusões de registro
 Em Windows 10 1809+ / Windows 11, instale com autorização o .NET SDK 10 e as ferramentas MAUI/Windows SDK compatíveis (Visual Studio 2026 com desenvolvimento .NET MAUI é uma opção). Confirme `dotnet --info`.
 
 ```powershell
-dotnet workload install maui --version 10.0.100
+dotnet workload install maui-windows --version 10.0.100
 dotnet test tests/GerenciadorAulas.Tests
 dotnet build src/GerenciadorAulas.App -f net10.0-windows10.0.19041.0 -p:BuildWindowsOnly=true -r win-x64
 dotnet run --project src/GerenciadorAulas.App -f net10.0-windows10.0.19041.0 -p:BuildWindowsOnly=true -r win-x64
@@ -48,7 +47,7 @@ Pré-requisitos: SDK .NET 10, workload MAUI Android estável, JDK 21 e Android S
 ```sh
 dotnet workload install maui-android --version 10.0.100
 dotnet test tests/GerenciadorAulas.Tests
-dotnet build src/GerenciadorAulas.App -f net10.0-android -c Debug \
+dotnet build src/GerenciadorAulas.App -f net10.0-android -p:BuildAndroidOnly=true -c Debug \
   -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME"
 adb devices
 adb -s SERIAL install -r src/GerenciadorAulas.App/bin/Debug/net10.0-android/br.com.gerenciadoraulas.app-Signed.apk

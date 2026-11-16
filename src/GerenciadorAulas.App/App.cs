@@ -30,6 +30,16 @@ public class App(IServiceProvider services) : Application
             finally { ticking=false; }
         };
         window.Created+=(_,_)=>timer.Start();window.Destroying+=(_,_)=>{timer.Stop();store.Changed-=changed;context.RecoveryPassword=null;};
+        window.Created+=(_,_)=>Dispatcher.Dispatch(async()=>
+        {
+            try
+            {
+                await coordinator.InitializeAsync();
+                var onboarding=services.GetRequiredService<GerenciadorAulas.Core.GoogleOnboarding>();
+                if(await onboarding.ShouldOfferAsync())await shell.Navigation.PushModalAsync(new NavigationPage(new GoogleWelcomePage(services)));
+            }
+            catch(Exception ex){System.Diagnostics.Debug.WriteLine("Conta opcional indisponível: "+ex.GetType().Name);}
+        });
         return window;
     }
 }

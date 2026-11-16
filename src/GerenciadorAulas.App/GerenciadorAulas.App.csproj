@@ -20,4 +20,7 @@
     <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#14594E" />
     <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#14594E" BaseSize="128,128" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.GooglePlayServices.Auth" Version="121.4.0.1" />
+  </ItemGroup>
 </Project>

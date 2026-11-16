@@ -76,6 +76,9 @@ public sealed class WorkspacePage : ContentPage
                 foreach(var e in (await store.AllAsync<Evidence>()).Where(e=>scoped.Contains(e.RecordId)))Row(e,e.FileName,$"{e.Size/1024d:F1} KB{(e.Sensitive?" · Sensível":"")}");break;
             case "Relatórios":BuildReports();break;
             case "Configurações":
+                var account=await services.GetRequiredService<GoogleAuthorization>().AccountAsync();
+                Note(account is null?"Google: nenhuma conta identificada neste dispositivo.":"Google: "+account.DisplayName+" · "+account.Email);
+                body.Add(Action("Conectar / gerenciar conta Google",()=>Navigation.PushAsync(new GoogleAccountPage(services))));
                 body.Add(Action("Editar e organizar catálogo de matérias",()=>OpenCatalogAsync(false)));
                 Note("Armazenamento local privado: SQLite e arquivos separados. A desinstalação pode apagar os dados. Exporte backups regularmente. O banco antigo não é migrado automaticamente; mantenha uma cópia dele.");
                 Note("Versão 1.0 · esquema "+JournalStore.SchemaVersion+" · Interface em português brasileiro. Use o menu para cadastrar aluno → ano letivo → matéria → estudos.");body.Add(Action("Atualizar tela",ReloadAsync));break;
@@ -153,16 +156,28 @@ public sealed class WorkspacePage : ContentPage
             var names=copies.Select(Path.GetFileName).ToArray();var chosen=await DisplayActionSheetAsync("Escolher cópia criptografada","Cancelar",null,names!);var index=Array.IndexOf(names,chosen);
             if(index>=0)await Share.Default.RequestAsync(new ShareFileRequest("Salvar cópia de segurança",new ShareFile(copies[index])));
         }));
-        Note("Google Drive: a configuração OAuth e o primeiro login dependem do proprietário. Login Windows usa navegador + PKCE + callback loopback. Login Android nativo está pendente nesta versão; backup local funciona nas duas plataformas.");
-        var id=new Microsoft.Maui.Controls.Entry {Placeholder="Client ID OAuth para computador",Text=Preferences.Default.Get("google-client-id","")};var secret=new Microsoft.Maui.Controls.Entry {Placeholder="Client secret do cliente desktop (se exigido pelo Google)",IsPassword=true};body.Add(id);body.Add(secret);
-        body.Add(Action("Conectar conta Google (Windows)",async()=>{await DesktopGoogleLogin.ConnectAsync(services.GetRequiredService<GoogleAuthorization>(),id.Text??"",secret.Text);Preferences.Default.Set("google-client-id",id.Text??"");await DisplayAlertAsync("Conta conectada","A permissão drive.file está pronta para uso. Faça um backup para validar o envio real.","OK");}));
-        body.Add(Action("Desconectar conta Google",async()=>{coordinator.Disable();await services.GetRequiredService<GoogleAuthorization>().DisconnectAsync();await ReloadAsync();}));
+        var auth=services.GetRequiredService<GoogleAuthorization>();var account=await auth.AccountAsync();
+        Note(account is null?"Google: nenhuma conta identificada. Conecte ou atualize a identificação nas Configurações.":$"Google: {account.DisplayName} · {account.Email}");
+        body.Add(Action("Conectar / gerenciar conta Google",()=>Navigation.PushAsync(new GoogleAccountPage(services))));
+        if(await vault.GetAsync("drive-last-backup") is string latestJson)
+        {
+            var latest=System.Text.Json.JsonSerializer.Deserialize<RemoteBackup>(latestJson);
+            if(latest is not null)Note($"Último envio verificado: {latest.CreatedUtc.ToLocalTime():g} · {latest.Size/1024d/1024:F1} MB · {latest.Device}");
+        }
+        Note("A senha de recuperação criptografa o backup. Ela não é sua senha Google e fica somente na memória desta sessão. O aplicativo continua funcionando offline; falhas de envio mantêm o backup pendente.");
         body.Add(Action("Fazer backup agora no Drive",async()=>{await coordinator.RunAsync(password.Text??"",DeviceInfo.Name);await ReloadAsync();}));
-        var auto=new Switch {IsToggled=coordinator.Enabled};body.Add(new Label {Text="Backup automático enquanto o aplicativo está aberto (após 30 s sem alterações)"});body.Add(auto);auto.Toggled+=(_,e)=>{if(e.Value)coordinator.Enable();else coordinator.Disable();};
+        var auto=new Switch {IsToggled=coordinator.Enabled};body.Add(new Label {Text="Autorizar backup automático enquanto o aplicativo estiver aberto"});body.Add(auto);
+        var interval=new Microsoft.Maui.Controls.Entry {Text=Math.Max(1,coordinator.MinimumIntervalSeconds/60).ToString(),Keyboard=Keyboard.Numeric};body.Add(new Label {Text="Intervalo mínimo entre envios automáticos (1 a 60 minutos)"});body.Add(interval);
+        body.Add(Action("Salvar configuração do backup automático",async()=>
+        {
+            if(!int.TryParse(interval.Text,out var minutes)||minutes is <1 or >60)throw new ArgumentException("Informe um intervalo de 1 a 60 minutos.");
+            if(auto.IsToggled&&!await DisplayAlertAsync("Autorizar envios automáticos?","Os backups criptografados dos registros educacionais serão enviados após alterações, enquanto o aplicativo estiver aberto e a senha de recuperação estiver disponível nesta sessão.","Autorizar","Cancelar"))return;
+            await coordinator.ConfigureAsync(auto.IsToggled,minutes*60);await ReloadAsync();
+        }));
         body.Add(Action("Listar backups do Google Drive",async()=>
         {
-            var list=await drive.ListAsync();if(list.Count==0){await DisplayAlertAsync("Backups","Nenhum backup acessível para este aplicativo. Confira também a permissão da pasta no outro dispositivo.","OK");return;}
-            var labels=list.Select((b,i)=>$"{i+1}. {b.CreatedUtc.ToLocalTime():g} · {b.Device} · {b.Size/1024d/1024:F1} MB · esquema {b.Schema}").ToArray();
+            var list=(await drive.ListAsync()).OrderByDescending(b=>b.CreatedUtc).ToList();if(list.Count==0){await DisplayAlertAsync("Backups","Nenhum backup acessível para este aplicativo. Confira também a permissão da pasta no outro dispositivo.","OK");return;}
+            var labels=list.Select((b,i)=>$"{i+1}. {(i==0?"Mais recente · ":"")}{b.CreatedUtc.ToLocalTime():g} · {b.Device} · {b.Size/1024d/1024:F1} MB · esquema {b.Schema}").ToArray();
             var selected=await DisplayActionSheetAsync("Restaurar backup","Cancelar",null,labels);var index=Array.IndexOf(labels,selected);if(index>=0)await RestoreAsync(await drive.DownloadAsync(list[index]),password.Text??"");
         }));
     }
@@ -181,6 +196,7 @@ public sealed class WorkspacePage : ContentPage
             if(!await DisplayAlertAsync("Há dados locais mais novos","Você perderá essas alterações na base ativa. A cópia de segurança preservará o estado atual. Restaurar mesmo assim?","Restaurar mesmo assim","Cancelar"))return;
             safety=await backups.RestoreAsync(bytes,password,true,true);
         }
+        await services.GetRequiredService<BackupCoordinator>().ConfigureAsync(false);
         await services.GetRequiredService<ITokenVault>().RemoveAsync("drive-last-revision");
         context.StudentId=null;context.YearId=null;await ReloadAsync();await DisplayAlertAsync("Restauração concluída","Banco e anexos restaurados. Cópia de segurança local: "+Path.GetFileName(safety),"OK");
     }

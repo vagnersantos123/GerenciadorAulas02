@@ -91,3 +91,5 @@ client_secret*.json
 credentials.json
 .env
 artifacts/
+# Temporary project backups produced by the .NET SDK resolver
+**/*.csproj.SdkResolver.*.proj.Backup.tmp
