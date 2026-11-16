@@ -297,6 +297,7 @@ public sealed class BackupCoordinator(JournalStore store, BackupService backups,
         if (string.IsNullOrEmpty(password)) { Status = "Backup pendente: informe a senha de recuperação nesta sessão."; return; }
         lastAttempt = Now;
         try { await RunAsync(password, device, ct); }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested) { Status = "Backup pendente; tempo de conexão esgotado. Tente novamente."; due = Now.AddMinutes(2); }
         catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException) { Status = "Backup pendente; falha de conexão ou configuração. Tente novamente."; due = Now.AddMinutes(2); }
     }
     public async Task<RemoteBackup> RunAsync(string password, string device, CancellationToken ct = default)
